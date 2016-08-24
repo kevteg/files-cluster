@@ -16,6 +16,22 @@ class client():
         self.sock.bind(('', receive_udp_port))
         mreq = struct.pack("4sl", socket.inet_aton(receive_multicast_group), socket.INADDR_ANY)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        # Look up multicast group address in name server and find out IP version
+        group = 'ff05:70aa:aaaa:3333:4444:2222:1111:6666'
+        self.addrinfo = socket.getaddrinfo(group, None)[0]
+        self.MYPORT = 8124
+        # Create a socket
+        self.sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        self.sock.bind(('', self.MYPORT))
+        group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
+        mreq = group_bin + struct.pack('@I', 0)
+        self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
+
+        # Loop, printing any data we receive
+        while True:
+            data, sender = self.sock.recvfrom(1500)
+            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+            print (str(sender) + '  ' + repr(data))
 
     def run(self):
         print("Starting server")
@@ -26,7 +42,9 @@ class client():
     def read(self):
         print("Starting to read from server")
         while self.dowork:
-            print("Receiving: " + self.sock.recv(10240).decode('utf-8'))
+            data, sender = self.sock.recvfrom(1500)
+            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+            print (str(sender) + '  ' + repr(data))
         print("Stoping")
         self.sock.close()
 

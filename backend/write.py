@@ -12,10 +12,15 @@ import argparse
 class server():
     def __init__(self, send_multicast_group, send_udp_port):
         #Setting udp socket to send information that comes through serial:
-        self.send_multicast_group = send_multicast_group
-        self.send_udp_port = send_udp_port
-        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.send_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        group = 'ff05:70aa:aaaa:3333:4444:2222:1111:6666'
+        self.addrinfo = socket.getaddrinfo(group, None)[0]
+        self.send_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        self.MYPORT = 8124
+        # Set Time-to-live (optional)
+        ttl_bin = struct.pack('@I', 1)
+        self.send_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
+
+
 
     def run(self):
         print("Starting server")
@@ -25,10 +30,11 @@ class server():
 
     def write(self):
         print("Starting to write to client")
-        out = 'Hola'
         while self.dowork :
-            self.send_sock.sendto(out.encode(), (self.send_multicast_group, self.send_udp_port))
-            print("Sending: " + out)
+            data = repr(time.time())
+            self.send_sock.sendto(data.encode(), (self.addrinfo[4][0], self.MYPORT))
+            time.sleep(1)
+            print("Sending: " + data)
         print("Stoping")
         self.send_sock.close()
 

@@ -18,6 +18,17 @@ import time
 import struct
 import socket
 import sys
+import fcntl
+
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', bytes(ifname[:15], 'utf-8'))
+    )[20:24])
+
+# print(get_ip_address('vmnet1'))
 
 def main():
     group = MYGROUP_6 if "-6" in sys.argv[1:] else MYGROUP_4
@@ -31,12 +42,14 @@ def main():
 def sender(group):
     print(socket.getaddrinfo(group, None))
     addrinfo = socket.getaddrinfo(group, None)[0]
-    print("\n" + repr(addrinfo))
     s = socket.socket(addrinfo[0], socket.SOCK_DGRAM)
+    print("\n" + repr(addrinfo))
     print("\n" + repr(addrinfo[0]))
     print("\n" + repr(addrinfo[4][0]))
     # Set Time-to-live (optional)
-    ttl_bin = struct.pack('@i', MYTTL)
+    ttl_bin = struct.pack('@I', MYTTL)
+    # s.setsockopt(socket.IPPROTO_IPV6, socket.IP_MULTICAST_IF, socket.inet_aton(repr(addrinfo[4][0])))
+    # s.bind(('fe80::250:56ff:fec0:8', MYPORT))
     if addrinfo[0] == socket.AF_INET: # IPv4
         s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
     else:
@@ -50,7 +63,7 @@ def sender(group):
 
 def receiver(group):
     # Look up multicast group address in name server and find out IP version
-    addrinfo = socket.getaddrinfo(group, None)[0]
+    addrinfo = socket.getaddrinfo(group, None)[2]
 
     # Create a socket
     s = socket.socket(addrinfo[0], socket.SOCK_DGRAM)
