@@ -1,5 +1,6 @@
 *
 !frontend/
+!frontend/app
 !frontend/app/*
 !backend
 !backend/*
