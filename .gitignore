@@ -1,5 +1,4 @@
-/frontend*
+/frontend
 /frontend/*
 !/frontend/app
 !/frontend/app/*
-!/frontend/Linux.sh
