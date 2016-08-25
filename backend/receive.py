@@ -6,14 +6,17 @@ import threading
 import struct
 import os
 import argparse
+import binascii
 '''
     Author: Keeeevin
 '''
 class client():
     def __init__(self, group_name):
+
         # Look up multicast group address in name server and find out IP version
-        group = 'ff05:70aa:aaaa:3333:4444:2222:1111:6666'
-        self.MYPORT = 8124
+
+        group, self.MYPORT = self.getConnectionInfo(group_name)
+        print("Created IP: " + group + ", port: " + str(self.MYPORT))
         self.addrinfo = socket.getaddrinfo(group, None)[0]
         # Create a socket
         self.sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
@@ -22,9 +25,29 @@ class client():
         mreq = group_bin + struct.pack('@I', 0)
         self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
 
+    def getConnectionInfo(self, group_name):
+        text = (binascii.hexlify(group_name.encode('utf-8')).decode())
+        port = int('0x' + text[1:4], 0)
+        port = port + 5000
+        cafe = 'cafe'
+        ip = "ff05"
+        index = 0
+        lon = len(text)
+        if lon > 29:
+            text = text[0:28]
+
+        for i in range(1, 29 - lon):
+            text += cafe[index]
+            index = 0 if not i%4 else index + 1
+
+        for index, i in enumerate(text, start = 0):
+            ip += i if index%4 else ':' + i
+
+        return ip, port
+
 
     def run(self):
-        print("Starting server")
+        print("Starting receiver")
         self.dowork = True
         reader = threading.Thread(name='read', target=self.read)
         reader.start()
