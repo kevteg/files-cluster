@@ -11,5 +11,7 @@ la otra es la de produccion
 
 metemos la carpeta app dentro de lo que descargamos y ejecutamos
 en Win
-nos ubicamos en la carpeta nw app
+con el script Windows.bat
 en linux con el script Linux.sh
+ox
+falta probar
