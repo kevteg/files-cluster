@@ -1,5 +1,6 @@
-/frontend
-/frontend/*
-!/frontend/app
-!/frontend/app/*
+*
+!frontend/
+!frontend/app/*
+!backend
+!backend/*
 !/frontend/Linux.sh
