@@ -20,7 +20,7 @@ class client():
         self.addrinfo = socket.getaddrinfo(group, None)[0]
         # Create a socket
         self.sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
-        self.sock.bind(('', self.MYPORT))
+        # self.sock.bind(('', self.MYPORT))
         group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
         mreq = group_bin + struct.pack('@I', 0)
         self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
@@ -54,6 +54,8 @@ class client():
 
     def read(self):
         print("Starting to read from server")
+        data = "CLIENT HI"
+        self.sock.sendto(data.encode(), (self.addrinfo[4][0], self.MYPORT))
         while self.dowork:
             data, sender = self.sock.recvfrom(1500)
             while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's

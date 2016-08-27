@@ -7,19 +7,31 @@ import struct
 import os
 import argparse
 import binascii
+# from sendfile import sendfile
 '''
     Author: Keeeevin
 '''
 class server():
     def __init__(self, group_name):
         #Setting udp socket to send information that comes through serial:
+        # group, self.MYPORT = self.getConnectionInfo(group_name)
+        # print("Created IP: " + group + ", port " + str(self.MYPORT))
+        # self.addrinfo = socket.getaddrinfo(group, None)[0]
+        # self.send_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        # # Set Time-to-live (optional)
+        # ttl_bin = struct.pack('@I', 1)
+        # self.send_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
         group, self.MYPORT = self.getConnectionInfo(group_name)
-        print("Created IP: " + group + ", port " + str(self.MYPORT))
+        print("Created IP: " + group + ", port: " + str(self.MYPORT))
         self.addrinfo = socket.getaddrinfo(group, None)[0]
-        self.send_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
-        # Set Time-to-live (optional)
-        ttl_bin = struct.pack('@I', 1)
-        self.send_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
+        # Create a socket
+        self.sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        self.sock.bind(('', self.MYPORT))
+        group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
+        mreq = group_bin + struct.pack('@I', 0)
+        # ttl_bin = struct.pack('@I', 1)
+        # self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
+        self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
 
     def getConnectionInfo(self, group_name):
         text = (binascii.hexlify(group_name.encode('utf-8')).decode())
@@ -44,18 +56,27 @@ class server():
     def run(self):
         print("Starting server")
         self.dowork = True
-        writer = threading.Thread(name='write', target=self.write)
-        writer.start()
+        self.writer = threading.Thread(name='write', target=self.write)
+        reader = threading.Thread(name='read', target=self.read)
+        reader.start()
+        self.writer.start()
+        # self.writer.start()
+    def read(self):
+        while True:
+            data, sender = self.sock.recvfrom(1500)
+            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+            print (str(sender) + ' ' + repr(data))
 
     def write(self):
         print("Starting to write to client")
-        while self.dowork :
+        # file = open("somefile", "rb")
+        while self.dowork:
             data = repr(time.time())
-            self.send_sock.sendto(data.encode(), (self.addrinfo[4][0], self.MYPORT))
+            self.sock.sendto(data.encode(), (self.addrinfo[4][0], self.MYPORT))
             time.sleep(1)
             print("Sending: " + data)
         print("Stoping")
-        self.send_sock.close()
+        self.sock.close()
 
 
 
