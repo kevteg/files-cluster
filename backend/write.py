@@ -9,6 +9,7 @@ import argparse
 import binascii
 import subprocess
 import sys
+import unicast_obj
 # from sendfile import sendfile
 '''
     Author: Keeeevin
@@ -35,6 +36,7 @@ class server():
                 # ttl_bin = struct.pack('@I', 1)
                 # self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
                 self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
+                self.unicast_connected_to = {}
                 self.unicast_connections = {}
             except Exception as e:
                 print("Error: Is IPv6 activated?", file=sys.stderr)
@@ -71,7 +73,7 @@ class server():
         print("Starting server")
         self.dowork = True
         self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
-        self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[self.interface])
+        self.tcp_thread = threading.Thread(name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
         self.multicast_thread.start()
 
     def getOwnLinkLocal(self, interface):
@@ -91,41 +93,49 @@ class server():
 
 
     #This one connects to others socket
-    def createTcpConnection(self, name, address_to_connect, interface):
-        time.sleep(1)
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-        addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
-        print(addr[-1])
-        sock.connect(addr[-1])
-        print ("client opened socket connection:", sock.getsockname())
+    def connectToTCPServer(self, name, address_to_connect, interface):
+        try:
+            time.sleep(1)
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+            addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
+            sock.connect(addr[-1])
+            print ("Unicast connection with ", name)
+            #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
+            self.unicast_connected_to[name] = threading.Thread(name='tcpConnection', target=self.tcpConnectedTo, args=[sock])
+            self.unicast_connected_to[name].start()
+        except Exception as e:
+            print(e)
+            print("User " + name + " seems to not be listening :(")
+
+    #Este es el método del hilo que maneja el socket de conexión cuando se es cliente
+    def tcpConnectedTo(self, sock):
+        #El primer mensaje deberia ser un saludo
         data = 'Hello, world! -> via IPv6 :-)'
         print ('Client is sending:', repr(data))
-
+        #Crear un diccionario de las conecciones y sus direcciones o sus sockets
         sock.send(data.encode())
         data = sock.recv(1024).decode()
-        sock.close()
         print ('Client received response:', repr(data))
+        sock.close()
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos
-    def createTcpSocket(self, interface):
+    def waitTCPCLients(self, interface):
         # interface = "vmnet1"
         addr = socket.getaddrinfo(self.getOwnLinkLocal(interface) + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
         self.tcp_socket = socket.socket(addr[0], socket.SOCK_STREAM)
         self.tcp_socket.bind(addr[-1])
-        self.tcp_socket.listen(1)
+        self.tcp_socket.listen(10)
         print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
         conn, addr = self.tcp_socket.accept()
         print("Connection stablished")
-
+        #el primer mensaje deberia ser el nombre
         print ('Server: Connected by', addr)
         if True: # answer a single request
             data = conn.recv(1024)
             conn.send(data)
         conn.close()
 
-    def tcpThread(self):
-        pass
 
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
@@ -136,9 +146,7 @@ class server():
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
-                # self.tcp_connect_thread = threading.Thread(name='tcp_connect_thread', target=self.createTcpConnection, args=[args[1], address_to_connect, interface])
-                # self.tcp_connect_thread.start()
-                self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
+                self.connectToTCPServer(name = args[1], address_to_connect = address_to_connect, interface = interface)
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
