@@ -8,11 +8,12 @@ def fetch_local_ipv6_address(port=10008):
     if not socket.has_ipv6:
         raise Exception("the local machine has no IPv6 support enabled")
 
-    addrs = socket.getaddrinfo("localhost", port, socket.AF_INET6, 0, socket.SOL_TCP)
+    addrs = socket.getaddrinfo("fe80::351d:ce3:a858:f551%wlp1s0", port, socket.AF_INET6, 0, socket.SOL_TCP)
     # example output: [(23, 0, 6, '', ('::1', 10008, 0, 0))]
 
     if len(addrs) == 0:
         raise Exception("there is no IPv6 address configured for localhost")
+    print(addrs)
     entry0 = addrs[0]
     sockaddr = entry0[-1]
     return sockaddr
@@ -20,7 +21,8 @@ def fetch_local_ipv6_address(port=10008):
 
 def ipv6_echo_server(sockaddr):
     # Echo server program
-
+    print(">")
+    print(sockaddr)
     s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     s.bind(sockaddr)
     s.listen(1)
