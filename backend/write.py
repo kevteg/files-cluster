@@ -102,6 +102,7 @@ class server():
         self.tcp_socket.listen(1)
         print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % addr[0])
         conn, addr = self.tcp_socket.accept()
+        print("Connection stablished")
 
         time.sleep(1)
         print ('Server: Connected by', addr)
@@ -124,7 +125,7 @@ class server():
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
-                self.createTcpConnection(name = args[1], address = address_to_connect, interface = interface)
+                self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
