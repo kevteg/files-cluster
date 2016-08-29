@@ -71,6 +71,7 @@ class server():
         print("Starting server")
         self.dowork = True
         self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
+        self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[self.interface])
         self.multicast_thread.start()
 
     def getOwnLinkLocal(self, interface):
@@ -91,6 +92,7 @@ class server():
 
     #This one connects to others socket
     def createTcpConnection(self, name, address_to_connect, interface):
+        time.sleep(1)
         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
         print(addr[-1])
@@ -134,9 +136,9 @@ class server():
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
-                self.tcp_connect_thread = threading.Thread(name='tcp_connect_thread', target=self.createTcpConnection, args=[args[1], address_to_connect, interface])
-                self.tcp_connect_thread.start()
-                # self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
+                # self.tcp_connect_thread = threading.Thread(name='tcp_connect_thread', target=self.createTcpConnection, args=[args[1], address_to_connect, interface])
+                # self.tcp_connect_thread.start()
+                self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
@@ -158,7 +160,6 @@ class server():
         #mensaje de saludo inicial a los que esten escuchando
         send, message = self.typeOfMessage('greetings')
         if send:
-            self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[self.interface])
             self.tcp_thread.start()
             self.sendToGroup(message)
 
