@@ -91,6 +91,14 @@ class server():
         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
         sock.connect(addr[-1])
+        print ("client opened socket connection:", sock.getsockname())
+        data = 'Hello, world! -> via IPv6 :-)'
+        print ('Client is sending:', repr(data))
+
+        sock.send(data.encode())
+        data = sock.recv(1024).decode()
+        sock.close()
+        print ('Client received response:', repr(data))
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos

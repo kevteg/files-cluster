@@ -28,6 +28,7 @@ def ipv6_echo_server(sockaddr):
     s.listen(1)
     print ("server opened socket connection:", s, ", address: '%s'" % sockaddr[0])
     conn, addr = s.accept()
+    print("se conecto")
 
     time.sleep(1)
     print ('Server: Connected by', addr)
@@ -45,6 +46,7 @@ def ipv6_echo_client(sockaddr):
     #PORT = 10008              # The same port as used by the server
     s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     #s.connect((HOST, PORT))
+    print("me voy a conectar")
     s.connect(sockaddr)
 
     print ("client opened socket connection:", s.getsockname())
