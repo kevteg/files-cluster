@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*
 import time
 import socket
@@ -68,7 +68,6 @@ class server():
         print("Starting server")
         self.dowork = True
         self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
-        self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket)
         self.multicast_thread.start()
 
     def getOwnLinkLocal(self, interface):
@@ -95,8 +94,8 @@ class server():
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos
-    def createTcpSocket(self):
-        interface = "vmnet1"
+    def createTcpSocket(self, interface):
+        # interface = "vmnet1"
         addr = socket.getaddrinfo(self.getOwnLinkLocal(interface) + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
         self.tcp_socket = socket.socket(addr[0], socket.SOCK_STREAM)
         self.tcp_socket.bind(addr[-1])
@@ -120,6 +119,8 @@ class server():
             address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
             if args is not None and not(connect):
                 print("I sent that message!")
+                self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[interface])
+                self.tcp_thread.start()
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
@@ -145,7 +146,6 @@ class server():
         #mensaje de saludo inicial a los que esten escuchando
         send, message = self.typeOfMessage('greetings')
         if send:
-            self.tcp_thread.start()
             self.sendToGroup(message)
 
         while self.dowork:
