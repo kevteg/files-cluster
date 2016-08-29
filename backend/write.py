@@ -90,6 +90,7 @@ class server():
     def createTcpConnection(self, name, address_to_connect, interface):
         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
+        print(addr[-1])
         sock.connect(addr[-1])
         print ("client opened socket connection:", sock.getsockname())
         data = 'Hello, world! -> via IPv6 :-)'
@@ -108,7 +109,7 @@ class server():
         self.tcp_socket = socket.socket(addr[0], socket.SOCK_STREAM)
         self.tcp_socket.bind(addr[-1])
         self.tcp_socket.listen(1)
-        print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % addr[0])
+        print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
         conn, addr = self.tcp_socket.accept()
         print("Connection stablished")
 
@@ -133,7 +134,9 @@ class server():
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
-                self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
+                self.tcp_connect_thread = threading.Thread(name='tcp_connect_thread', target=self.createTcpConnection, args=[args[1], address_to_connect, interface])
+                self.tcp_connect_thread.start()
+                # self.createTcpConnection(name = args[1], address_to_connect = address_to_connect, interface = interface)
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
