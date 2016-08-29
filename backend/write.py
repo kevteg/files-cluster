@@ -15,16 +15,18 @@ import sys
     TODO: Write docs of each function
 '''
 class server():
-    def __init__(self, group_name, username):
+    def __init__(self, group_name, username, interface):
         group, self.MYPORT = self.getConnectionInfo(group_name)
         if group is not None:
             try:
+                self.interface = interface
                 # group = "fe80::351d:ce3:a858:f551"
                 print("Created IP: " + group + ", port: " + str(self.MYPORT))
                 # print(socket.getaddrinfo(group, None))
                 self.addrinfo = socket.getaddrinfo(group, None)[0]
                 self.username = username
                 # Crea el socket del tipo IPv6
+
                 self.multicast_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
                 # se hace bind en ese puerto
                 self.multicast_sock.bind(('', self.MYPORT))
@@ -34,8 +36,9 @@ class server():
                 # self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
                 self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
                 self.unicast_connections = {}
-            except:
+            except Exception as e:
                 print("Error: Is IPv6 activated?", file=sys.stderr)
+                print(e)
                 exit(-1)
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
@@ -113,7 +116,6 @@ class server():
         conn, addr = self.tcp_socket.accept()
         print("Connection stablished")
 
-        time.sleep(1)
         print ('Server: Connected by', addr)
         if True: # answer a single request
             data = conn.recv(1024)
@@ -128,9 +130,7 @@ class server():
         if args:
             address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
             if args is not None and not(connect):
-                print("I sent that message!")
-                self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[interface])
-                self.tcp_thread.start()
+                print("I sent that UDP message!")
             else:
                 #revisar si ya esta esa conexión
                 print("I did not sent that. Will create a unicast connection with " + address_to_connect)
@@ -158,6 +158,8 @@ class server():
         #mensaje de saludo inicial a los que esten escuchando
         send, message = self.typeOfMessage('greetings')
         if send:
+            self.tcp_thread = threading.Thread(name='tcp_thread', target=self.createTcpSocket, args=[self.interface])
+            self.tcp_thread.start()
             self.sendToGroup(message)
 
         while self.dowork:
@@ -174,8 +176,9 @@ class server():
 parser = argparse.ArgumentParser(prog='serialserver', usage='%(prog)s [options]',description='Script to receive changes in directory to a multicast group.')
 parser.add_argument('-g','--group', required =True, dest='group_name',type=str, help='Group to connect in')
 parser.add_argument('-n','--name', required =True, dest='username',type=str, help='User name')
+parser.add_argument('-i','--interface', required =True, dest='interface',type=str, help='Interface to use')
 
 args = parser.parse_args()
 
-serv = server(args.group_name, args.username)
+serv = server(args.group_name, args.username, args.interface)
 serv.run()
