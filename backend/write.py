@@ -97,11 +97,11 @@ class server():
         try:
             time.sleep(1)
             sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-            addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
+            addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 20, socket.AF_INET6, 0, socket.SOL_TCP)[0]
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
-            self.unicast_connected_to[name] = threading.Thread(name='tcpConnection', target=self.tcpConnectedTo, args=[sock])
+            self.unicast_connected_to[name] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[sock])
             self.unicast_connected_to[name].start()
         except Exception as e:
             print(e)
@@ -127,10 +127,14 @@ class server():
         self.tcp_socket.bind(addr[-1])
         self.tcp_socket.listen(10)
         print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
-        conn, addr = self.tcp_socket.accept()
-        print("Connection stablished")
+        conn, address = self.tcp_socket.accept()
+        print("Connection stablished with " + str(address))
         #el primer mensaje deberia ser el nombre
-        print ('Server: Connected by', addr)
+        self.unicast_connections[str(address[0])] = threading.Thread(name='tcpConnection'+str(address[0]), target=self.tcpConnection, args=[conn])
+        self.unicast_connections[str(address[0])].start()
+
+    #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
+    def tcpConnection(self, conn):
         if True: # answer a single request
             data = conn.recv(1024)
             conn.send(data)
