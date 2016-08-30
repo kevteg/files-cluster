@@ -38,6 +38,7 @@ class server():
                 self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
+                self.stop = False
             except Exception as e:
                 print("Error: Is IPv6 activated?", file=sys.stderr)
                 print(e)
@@ -127,11 +128,13 @@ class server():
         self.tcp_socket.bind(addr[-1])
         self.tcp_socket.listen(10)
         print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
-        conn, address = self.tcp_socket.accept()
-        print("Connection stablished with " + str(address))
-        #el primer mensaje deberia ser el nombre
-        self.unicast_connections[str(address[0])] = threading.Thread(name='tcpConnection'+str(address[0]), target=self.tcpConnection, args=[conn])
-        self.unicast_connections[str(address[0])].start()
+        while not self.stop:
+            conn, address = self.tcp_socket.accept()
+            print("Connection stablished with " + str(address))
+            #el primer mensaje deberia ser el nombre
+            self.unicast_connections[str(address[0])] = threading.Thread(name='tcpConnection'+str(address[0]), target=self.tcpConnection, args=[conn])
+            self.unicast_connections[str(address[0])].start()
+        self.tcp_socket.close()
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
     def tcpConnection(self, conn):
