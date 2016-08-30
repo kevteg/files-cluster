@@ -97,7 +97,7 @@ class server():
         try:
             time.sleep(1)
             sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-            addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 20, socket.AF_INET6, 0, socket.SOL_TCP)[0]
+            addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
