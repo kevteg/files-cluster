@@ -9,7 +9,7 @@ import argparse
 import binascii
 import subprocess
 import sys
-import unicast_obj
+from unicast_obj import uniObj
 # from sendfile import sendfile
 '''
     Author: Keeeevin
