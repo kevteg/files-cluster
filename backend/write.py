@@ -103,7 +103,7 @@ class server():
             print ("Unicast connection with ", name)
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
             new_server = uniObj(username = name, socket = sock)
-            self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[sock])
+            self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
             self.unicast_connected_to[new_server].start()
         except Exception as e:
             print(e)
@@ -134,7 +134,7 @@ class server():
             print("Connection stablished with " + str(address))
             #el primer mensaje deberia ser el nombre
             new_client = uniObj(socket = sock, address = str(address[0]))
-            self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[conn])
+            self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[new_client])
             self.unicast_connections[new_client].start()
         self.tcp_socket.close()
 
