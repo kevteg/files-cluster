@@ -102,22 +102,23 @@ class server():
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
-            self.unicast_connected_to[name] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[sock])
-            self.unicast_connected_to[name].start()
+            new_server = uniObj(username = name, socket = sock)
+            self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[sock])
+            self.unicast_connected_to[new_server].start()
         except Exception as e:
             print(e)
             print("User " + name + " seems to not be listening :(")
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es cliente
-    def tcpConnectedTo(self, sock):
+    def tcpConnectedTo(self, server):
         #El primer mensaje deberia ser un saludo
         data = 'Hello, world! -> via IPv6 :-)'
         print ('Client is sending:', repr(data))
         #Crear un diccionario de las conecciones y sus direcciones o sus sockets
-        sock.send(data.encode())
-        data = sock.recv(1024).decode()
+        server.getSocket().send(data.encode())
+        data = server.getSocket().recv(1024).decode()
         print ('Client received response:', repr(data))
-        sock.close()
+        server.getSocket().close()
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos
@@ -132,16 +133,17 @@ class server():
             conn, address = self.tcp_socket.accept()
             print("Connection stablished with " + str(address))
             #el primer mensaje deberia ser el nombre
-            self.unicast_connections[str(address[0])] = threading.Thread(name='tcpConnection'+str(address[0]), target=self.tcpConnection, args=[conn])
-            self.unicast_connections[str(address[0])].start()
+            new_client = uniObj(socket = sock, address = str(address[0]))
+            self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[conn])
+            self.unicast_connections[new_client].start()
         self.tcp_socket.close()
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
-    def tcpConnection(self, conn):
+    def tcpConnection(self, client):
         if True: # answer a single request
-            data = conn.recv(1024)
-            conn.send(data)
-        conn.close()
+            data = client.getSocket().recv(1024)
+            client.getSocket().send(data)
+        client.getSocket().close()
 
 
     def createUnicast(self, args):
