@@ -20,9 +20,11 @@ class server():
     def __init__(self, group_name, username, interface, dirc):
         group, self.MYPORT = self.getConnectionInfo(group_name)
         self.directory = dirc
-        for fi in directory.getFilesObjects(dirc):
-            print(fi.name)
-            print(fi.read())
+        self.time_to_send_list_of_files = 20 #cada N segundos enviar lista de archivos en directorio
+        self.send_list_of_files = False
+        # for fi in directory.getFilesObjects(dirc):
+        #     print(fi.name)
+        #     print(fi.read())
         if group is not None:
             try:
                 self.interface = interface
@@ -80,7 +82,11 @@ class server():
         self.dowork = True
         self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
         self.tcp_thread = threading.Thread(name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
+        self.multicast_thread_sender = threading.Thread(name='multicast_sender', target=self.multicast_sender)
+        self.time_check = threading.Thread(name='time_check', target=self.time_checker)
+        self.time_check.start()
         self.multicast_thread.start()
+        self.multicast_thread_sender.start()
 
     def getOwnLinkLocal(self, interface):
         find_ip = subprocess.Popen('ip addr show ' + interface + ' | grep "\<inet6\>" | awk \'{ print $2 }\' | awk \'{ print $1 }\'', shell=True, stdout=subprocess.PIPE)
@@ -170,16 +176,26 @@ class server():
         methods =  {
             'greetings': (True, self.sendUserName),
             'connection': (False, self.createUnicast),
+            'list': (True, directory.getFilesAtDirectory),
+            'files': (False, self.checkFiles),
         }.get(type, (False, (lambda args: "Error")))
         return methods[0], methods[1](args)
 
+    def checkFiles(self, args):
+        if args:
+            address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
+            if args is not None and not(connect):
+                print("I sent that UDP message!")
+            else:
+                print("Check if I have those files")
+
     def sendToGroup(self, message):
         print("Sending to group: " + message)
-        # print(self.multicast_sock.gethostbyname())
         self.multicast_sock.sendto(message.encode(), (self.addrinfo[4][0], self.MYPORT))
 
     def multicast_check(self):
         #mensaje de saludo inicial a los que esten escuchando
+        #este método se encarga de responder a lo que llegue
         send, message = self.typeOfMessage('greetings')
         if send:
             self.tcp_thread.start()
@@ -195,6 +211,26 @@ class server():
                 self.sendToGroup(message)
 
         self.multicast_sock.close()
+
+    def time_checker(self):
+        send_files_count_secs = 0
+        while self.dowork:
+            time.sleep(1)
+            send_files_count_secs = send_files_count_secs + 1
+            if send_files_count_secs > self.time_to_send_list_of_files:
+                self.send_list_of_files = True
+                send_files_count_secs = 0
+
+    def multicast_sender(self):
+        #este método se encarga de enviar información sin petición
+        while self.dowork:
+            if self.send_list_of_files:
+                self.send_list_of_files = False
+                send, message = self.typeOfMessage('list', self.directory)
+                if send:
+                    self.sendToGroup("files: " + str(message))
+
+
 
 parser = argparse.ArgumentParser(prog='serialserver', usage='%(prog)s [options]',description='Script to receive changes in directory to a multicast group.')
 parser.add_argument('-g','--group', required =True, dest='group_name',type=str, help='Group to connect in')
