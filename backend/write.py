@@ -10,14 +10,19 @@ import binascii
 import subprocess
 import sys
 from unicast_obj import uniObj
+import directory
 # from sendfile import sendfile
 '''
     Author: Keeeevin
     TODO: Write docs of each function
 '''
 class server():
-    def __init__(self, group_name, username, interface):
+    def __init__(self, group_name, username, interface, dirc):
         group, self.MYPORT = self.getConnectionInfo(group_name)
+        self.directory = dirc
+        for fi in directory.getFilesObjects(dirc):
+            print(fi.name)
+            print(fi.read())
         if group is not None:
             try:
                 self.interface = interface
@@ -195,8 +200,9 @@ parser = argparse.ArgumentParser(prog='serialserver', usage='%(prog)s [options]'
 parser.add_argument('-g','--group', required =True, dest='group_name',type=str, help='Group to connect in')
 parser.add_argument('-n','--name', required =True, dest='username',type=str, help='User name')
 parser.add_argument('-i','--interface', required =True, dest='interface',type=str, help='Interface to use')
+parser.add_argument('-d','--directory', required =True, dest='directory',type=str, help='Directory to share')
 
 args = parser.parse_args()
 
-serv = server(args.group_name, args.username, args.interface)
+serv = server(args.group_name, args.username, args.interface, args.directory)
 serv.run()
