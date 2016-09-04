@@ -154,7 +154,7 @@ class server():
         self.tcp_socket = socket.socket(addr[0], socket.SOCK_STREAM)
         self.tcp_socket.bind(addr[-1])
         self.tcp_socket.listen(10)
-        print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
+        print ("Server opened socket connection: ", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
         try:
             while self.dowork:
                 conn, address = self.tcp_socket.accept()
@@ -177,10 +177,11 @@ class server():
                 print("Receive from client: ", data)
                 #Aqui se procesa ese mensaje
                 information = data.decode('utf-8').split(':')
-                send, message = self.typeOfMessage(information[0], [True, information[1]])
-                if send:
-                    self.sendToGroup(message)
                 self.sendToClient(client, data)
+                send, message = self.typeOfMessage(information[0], [True, client, information[1]])
+                if send:
+                    self.sendToClient(client, message)
+                print(client.getUsername())
         except (KeyboardInterrupt, SystemExit):
             self.tcp_socket.close()
             self.dowork = False
@@ -190,11 +191,11 @@ class server():
     def sendToClient(self, client, data):
         client.getSocket().send(data)
 
-    def createUnicast(self, args):
+    def processUnicastConnection(self, args):
         #Si la dirección es diferente a la propia
         #el primer args es si es o no unicast el segundo el que envia y el tercero la informacion
         if args:
-            if not args[0]:
+            if not args[0]: #este mensaje llego desde multicast
                 address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
                 if args is not None and not(connect):
                     print("I sent that UDP message!")
@@ -202,6 +203,9 @@ class server():
                     #revisar si ya esta esa conexión
                     print("I did not send that. Will create a unicast connection with " + address_to_connect)
                     self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
+            else: #el mensaje llego desde unicast
+                print("Ahora le pondre nombre a " + args[2])
+                args[1].setUsername(args[2])
 
 
     def sendUserName(self, args):
@@ -211,7 +215,7 @@ class server():
         #retorna si va a responder y el mensaje que enviara al grupo
         methods =  {
             'greetings': (True, self.sendUserName),
-            'connection': (False, self.createUnicast),
+            'connection': (False, self.processUnicastConnection),
             'list': (True, directory.getFilesAtDirectory),
             'files': (False, self.checkFiles),
         }.get(type, (False, (lambda args: "Error")))
