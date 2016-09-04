@@ -111,9 +111,9 @@ class server():
             addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
-            print (addr[-1])
+            print (addr[-1][0])
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
-            new_server = uniObj(username = name, socket = sock)
+            new_server = uniObj(username = name, socket = sock, address = addr[-1][0])
             self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
             self.unicast_connected_to[new_server].start()
         except Exception as e:
@@ -180,7 +180,7 @@ class server():
         return methods[0], methods[1](args)
 
     def checkFiles(self, args):
-        test_directory = "/tmp/empty2"
+        # test_directory = "/tmp/empty2"
         if args:
             address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
             user_files = eval(args[1])
@@ -189,7 +189,7 @@ class server():
                 print("I sent that UDP message!")
             else:
                 print("Check if I have those files")
-                current_files = directory.getFilesAtDirectory(test_directory)
+                current_files = directory.getFilesAtDirectory(self.directory)
                 petition = []
                 print("receiving: ")
                 print(user_files)
