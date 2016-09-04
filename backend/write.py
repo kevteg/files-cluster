@@ -192,6 +192,7 @@ class server():
 
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
+        #el primer args es si es o no unicast el segundo el que envia y el tercero la informacion
         if args:
             if not args[0]:
                 address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
@@ -219,8 +220,8 @@ class server():
     def checkFiles(self, args):
         # test_directory = "/tmp/empty2"
         if args:
-            address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
-            user_files = eval(args[1])
+            address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
+            user_files = eval(args[2])
 
             if args is not None and not(connect):
                 print("I sent that UDP message!")
