@@ -123,12 +123,17 @@ class server():
     #Este es el método del hilo que maneja el socket de conexión cuando se es cliente
     def tcpConnectedTo(self, server):
         #El primer mensaje deberia ser un saludo
-        data = 'Hello, world! -> via IPv6 :-)'
-        print ('Client is sending:', repr(data))
-        server.getSocket().send(data.encode())
-        data = server.getSocket().recv(1024).decode()
-        print ('Client received response:', repr(data))
+        send, message = self.typeOfMessage('greetings')
+        if send:
+            self.sendToServer(server, message)
+        while self.dowork:
+            data = server.getSocket().recv(1024).decode()
+            print ('Received from ' + server.getUsername() + ':', repr(data))
         server.getSocket().close()
+
+    def sendToServer(self, server, data):
+        print ('Sending to ' + server.getUsername() + ':', repr(data))
+        server.getSocket().send(data.encode())
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos
@@ -150,10 +155,16 @@ class server():
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
     def tcpConnection(self, client):
-        if True: # answer a single request
+        while self.dowork:
             data = client.getSocket().recv(1024)
-            client.getSocket().send(data)
+            print("Receive from client: ", data)
+            #Aqui se procesa ese mensaje
+            self.sendToClient(client, data)
+
         client.getSocket().close()
+
+    def sendToClient(self, client, data):
+        client.getSocket().send(data)
 
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
