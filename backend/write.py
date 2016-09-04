@@ -21,9 +21,6 @@ class server():
         self.directory = dirc
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
-        # for fi in directory.getFilesObjects(dirc):
-        #     print(fi.name)
-        #     print(fi.read())
         if group is not None:
             try:
                 self.interface = interface
@@ -44,7 +41,6 @@ class server():
                 self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
-                self.stop = False
             except Exception as e:
                 print("Error: Is IPv6 activated?", file=sys.stderr)
                 print(e)
@@ -77,15 +73,25 @@ class server():
         return ip, port
 
     def run(self):
-        print("Starting files-cluster")
-        self.dowork = True
-        self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
-        self.tcp_thread = threading.Thread(name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
-        self.multicast_thread_sender = threading.Thread(name='multicast_sender', target=self.multicast_sender)
-        self.time_check = threading.Thread(name='time_check', target=self.time_checker)
-        self.time_check.start()
-        self.multicast_thread.start()
-        self.multicast_thread_sender.start()
+        try:
+            print("Starting files-cluster")
+            self.dowork = True
+            self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
+            self.tcp_thread = threading.Thread( name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
+            self.multicast_thread_sender = threading.Thread( name='multicast_sender', target=self.multicast_sender)
+            self.time_check = threading.Thread( name='time_check', target=self.time_checker)
+            self.time_check.start()
+            self.time_check.join(1)
+            self.multicast_thread.start()
+            self.multicast_thread.join(1)
+            self.multicast_thread_sender.start()
+            self.multicast_thread_sender.join(1)
+            # while True:
+            #     pass
+        except (KeyboardInterrupt, SystemExit):
+            print("Turnning off files-cluster")
+            self.multicast_sock.close()
+            self.dowork = False
 
     def getOwnLinkLocal(self, interface):
         find_ip = subprocess.Popen('ip addr show ' + interface + ' | grep "\<inet6\>" | awk \'{ print $2 }\' | awk \'{ print $1 }\'', shell=True, stdout=subprocess.PIPE)
@@ -114,8 +120,9 @@ class server():
             print (addr[-1][0])
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
             new_server = uniObj(username = name, socket = sock, address = addr[-1][0])
-            self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
+            self.unicast_connected_to[new_server] = threading.Thread(daemon=True, name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
             self.unicast_connected_to[new_server].start()
+            # self.unicast_connected_to[new_server].join(1)
         except Exception as e:
             print(e)
             print("User " + name + " seems to not be listening :(")
@@ -126,9 +133,13 @@ class server():
         send, message = self.typeOfMessage('greetings')
         if send:
             self.sendToServer(server, message)
-        while self.dowork:
-            data = server.getSocket().recv(1024).decode()
-            print ('Received from ' + server.getUsername() + ':', repr(data))
+        try:
+            while self.dowork:
+                data = server.getSocket().recv(1024).decode()
+                print ('Received from ' + server.getUsername() + ':', repr(data))
+        except (KeyboardInterrupt, SystemExit):
+            self.dowork = False
+        # print("chau")
         server.getSocket().close()
 
     def sendToServer(self, server, data):
@@ -144,22 +155,35 @@ class server():
         self.tcp_socket.bind(addr[-1])
         self.tcp_socket.listen(10)
         print ("Server opened socket connection:", self.tcp_socket, ", address: '%s'" % str(addr[-1]))
-        while not self.stop:
-            conn, address = self.tcp_socket.accept()
-            print("Connection stablished with " + str(address))
-            #el primer mensaje deberia ser el nombre
-            new_client = uniObj(socket = conn, address = str(address[0]))
-            self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[new_client])
-            self.unicast_connections[new_client].start()
+        try:
+            while self.dowork:
+                conn, address = self.tcp_socket.accept()
+                print("Connection stablished with " + str(address))
+                #el primer mensaje deberia ser el nombre
+                new_client = uniObj(socket = conn, address = str(address[0]))
+                self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[new_client])
+                self.unicast_connections[new_client].start()
+                self.unicast_connections[new_client].join(1)
+        except (KeyboardInterrupt, SystemExit):
+            self.tcp_socket.close()
+            self.dowork = False
         self.tcp_socket.close()
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
     def tcpConnection(self, client):
-        while self.dowork:
-            data = client.getSocket().recv(1024)
-            print("Receive from client: ", data)
-            #Aqui se procesa ese mensaje
-            self.sendToClient(client, data)
+        try:
+            while self.dowork:
+                data = client.getSocket().recv(1024)
+                print("Receive from client: ", data)
+                #Aqui se procesa ese mensaje
+                information = data.decode('utf-8').split(':')
+                send, message = self.typeOfMessage(information[0], [True, information[1]])
+                if send:
+                    self.sendToGroup(message)
+                self.sendToClient(client, data)
+        except (KeyboardInterrupt, SystemExit):
+            self.tcp_socket.close()
+            self.dowork = False
 
         client.getSocket().close()
 
@@ -168,14 +192,16 @@ class server():
 
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
-        if args:
-            address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
-            if args is not None and not(connect):
-                print("I sent that UDP message!")
-            else:
-                #revisar si ya esta esa conexión
-                print("I did not send that. Will create a unicast connection with " + address_to_connect)
-                self.connectToTCPServer(name = args[1], address_to_connect = address_to_connect, interface = interface)
+        if args
+            if not args[0]:
+                address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
+                if args is not None and not(connect):
+                    print("I sent that UDP message!")
+                else:
+                    #revisar si ya esta esa conexión
+                    print("I did not send that. Will create a unicast connection with " + address_to_connect)
+                    self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
+
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
@@ -222,35 +248,43 @@ class server():
         if send:
             self.tcp_thread.start()
             self.sendToGroup(message)
-
-        while self.dowork:
-            data, sender = self.multicast_sock.recvfrom(1500)
-            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-            print (str(sender) + ' ' + repr(data))
-            information = data.decode('utf-8').split(':')
-            send, message = self.typeOfMessage(information[0], [sender, information[1]])
-            if send:
-                self.sendToGroup(message)
-
+        try:
+            while self.dowork:
+                data, sender = self.multicast_sock.recvfrom(1500)
+                while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+                print (str(sender) + ' ' + repr(data))
+                information = data.decode('utf-8').split(':')
+                send, message = self.typeOfMessage(information[0], [False, sender, information[1]])
+                if send:
+                    self.sendToGroup(message)
+        except (KeyboardInterrupt, SystemExit):
+            self.multicast_sock.close()
+            self.dowork = False
         self.multicast_sock.close()
 
     def time_checker(self):
         send_files_count_secs = 0
-        while self.dowork:
-            time.sleep(1)
-            send_files_count_secs = send_files_count_secs + 1
-            if send_files_count_secs > self.time_to_send_list_of_files:
-                self.send_list_of_files = True
-                send_files_count_secs = 0
+        try:
+            while self.dowork:
+                time.sleep(1)
+                send_files_count_secs = send_files_count_secs + 1
+                if send_files_count_secs > self.time_to_send_list_of_files:
+                    self.send_list_of_files = True
+                    send_files_count_secs = 0
+        except (KeyboardInterrupt, SystemExit):
+            self.dowork = False
 
     def multicast_sender(self):
         #este método se encarga de enviar información sin petición
-        while self.dowork:
-            if self.send_list_of_files:
-                self.send_list_of_files = False
-                send, message = self.typeOfMessage('list', self.directory)
-                if send:
-                    self.sendToGroup("files: " + str(message))
+        try:
+            while self.dowork:
+                if self.send_list_of_files:
+                    self.send_list_of_files = False
+                    send, message = self.typeOfMessage('list', self.directory)
+                    if send:
+                        self.sendToGroup("files: " + str(message))
+        except (KeyboardInterrupt, SystemExit):
+            self.dowork = False
 
 
 
@@ -261,6 +295,5 @@ parser.add_argument('-i','--interface', required =True, dest='interface',type=st
 parser.add_argument('-d','--directory', required =True, dest='directory',type=str, help='Directory to share')
 
 args = parser.parse_args()
-
 serv = server(args.group_name, args.username, args.interface, args.directory)
 serv.run()
