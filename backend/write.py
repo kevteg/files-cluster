@@ -192,7 +192,7 @@ class server():
 
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
-        if args
+        if args:
             if not args[0]:
                 address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
                 if args is not None and not(connect):
