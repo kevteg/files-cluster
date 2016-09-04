@@ -11,7 +11,6 @@ import subprocess
 import sys
 from unicast_obj import uniObj
 import directory
-# from sendfile import sendfile
 '''
     Author: Keeeevin
     TODO: Write docs of each function
@@ -20,7 +19,7 @@ class server():
     def __init__(self, group_name, username, interface, dirc):
         group, self.MYPORT = self.getConnectionInfo(group_name)
         self.directory = dirc
-        self.time_to_send_list_of_files = 20 #cada N segundos enviar lista de archivos en directorio
+        self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
         # for fi in directory.getFilesObjects(dirc):
         #     print(fi.name)
@@ -101,7 +100,7 @@ class server():
             return connect_info[0], connect_info[1], not(link_local == connect_info[0])
         except:
             print("Error: could not find link local address", file=sys.stderr)
-            return "", False
+            return "", "", False
 
 
     #This one connects to others socket
@@ -125,7 +124,6 @@ class server():
         #El primer mensaje deberia ser un saludo
         data = 'Hello, world! -> via IPv6 :-)'
         print ('Client is sending:', repr(data))
-        #Crear un diccionario de las conecciones y sus direcciones o sus sockets
         server.getSocket().send(data.encode())
         data = server.getSocket().recv(1024).decode()
         print ('Client received response:', repr(data))
@@ -156,7 +154,6 @@ class server():
             client.getSocket().send(data)
         client.getSocket().close()
 
-
     def createUnicast(self, args):
         #Si la dirección es diferente a la propia
         if args:
@@ -165,7 +162,7 @@ class server():
                 print("I sent that UDP message!")
             else:
                 #revisar si ya esta esa conexión
-                print("I did not sent that. Will create a unicast connection with " + address_to_connect)
+                print("I did not send that. Will create a unicast connection with " + address_to_connect)
                 self.connectToTCPServer(name = args[1], address_to_connect = address_to_connect, interface = interface)
 
     def sendUserName(self, args):
@@ -182,12 +179,25 @@ class server():
         return methods[0], methods[1](args)
 
     def checkFiles(self, args):
+        test_directory = "/tmp/empty2"
         if args:
             address_to_connect, interface, connect = self.compareIp(str(args[0][0]))
+            user_files = eval(args[1])
+
             if args is not None and not(connect):
                 print("I sent that UDP message!")
             else:
                 print("Check if I have those files")
+                current_files = directory.getFilesAtDirectory(test_directory)
+                petition = []
+                print("receiving: ")
+                print(user_files)
+                for _file in user_files:
+                    if _file not in current_files:
+                        petition.append(_file)
+                print("Gonna ask for:")
+                print(petition)
+                #Trabajar en la parte de tcp
 
     def sendToGroup(self, message):
         print("Sending to group: " + message)
