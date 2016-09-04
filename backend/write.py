@@ -77,7 +77,7 @@ class server():
         return ip, port
 
     def run(self):
-        print("Starting server")
+        print("Starting files-cluster")
         self.dowork = True
         self.multicast_thread = threading.Thread(name='multicast_check', target=self.multicast_check)
         self.tcp_thread = threading.Thread(name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
@@ -111,6 +111,7 @@ class server():
             addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
+            print (addr[-1])
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
             new_server = uniObj(username = name, socket = sock)
             self.unicast_connected_to[new_server] = threading.Thread(name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
