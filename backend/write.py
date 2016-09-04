@@ -161,7 +161,7 @@ class server():
                 conn, address = self.tcp_socket.accept()
                 print("Connection stablished with " + str(address))
                 #el primer mensaje deberia ser el nombre
-                new_client = uniObj(socket = conn, username = "client", address = str(address[0]))
+                new_client = uniObj(socket = conn, address = str(address[0]))
                 self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[new_client])
                 self.unicast_connections[new_client].start()
                 self.unicast_connections[new_client].join(1)
@@ -175,7 +175,7 @@ class server():
         try:
             while self.dowork:
                 data = client.getSocket().recv(1024)
-                print("Receive from " + client.getUsername() + ": ", data)
+                print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", data)
                 #Aqui se procesa ese mensaje
                 information = data.decode('utf-8').split(':')
                 self.sendToClient(client, data)
@@ -205,8 +205,9 @@ class server():
                     print("I did not send that. Will create a unicast connection with " + address_to_connect)
                     self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
             else: #el mensaje llego desde unicast
-                print("Ahora le pondre nombre a " + args[2])
-                args[1].setUsername(args[2])
+                if args[2] is not None and args[2].getUsername() != ""
+                    print("Ahora le pondre nombre a " + args[2])
+                    args[1].setUsername(args[2])
 
 
     def sendUserName(self, args):
