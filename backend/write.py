@@ -160,7 +160,7 @@ class server():
                 conn, address = self.tcp_socket.accept()
                 print("Connection stablished with " + str(address))
                 #el primer mensaje deberia ser el nombre
-                new_client = uniObj(socket = conn, address = str(address[0]))
+                new_client = uniObj(socket = conn, username = "client", address = str(address[0]))
                 self.unicast_connections[new_client] = threading.Thread(name='tcpConnection'+new_client.getAddress(), target=self.tcpConnection, args=[new_client])
                 self.unicast_connections[new_client].start()
                 self.unicast_connections[new_client].join(1)
@@ -174,7 +174,7 @@ class server():
         try:
             while self.dowork:
                 data = client.getSocket().recv(1024)
-                print("Receive from client: ", data)
+                print("Receive from " + client.username() + ": ", data)
                 #Aqui se procesa ese mensaje
                 information = data.decode('utf-8').split(':')
                 self.sendToClient(client, data)
