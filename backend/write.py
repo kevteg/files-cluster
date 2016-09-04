@@ -174,7 +174,7 @@ class server():
         try:
             while self.dowork:
                 data = client.getSocket().recv(1024)
-                print("Receive from " + client.username() + ": ", data)
+                print("Receive from " + client.getUsername() + ": ", data)
                 #Aqui se procesa ese mensaje
                 information = data.decode('utf-8').split(':')
                 self.sendToClient(client, data)
