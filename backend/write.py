@@ -131,7 +131,8 @@ class server():
     def tcpConnectedTo(self, server):
         #El primer mensaje deberia ser un saludo
         send, message = self.typeOfMessage('greetings')
-        if send:
+        while send:
+            time.sleep(1)
             self.sendToServer(server, message)
         try:
             while self.dowork:
