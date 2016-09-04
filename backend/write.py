@@ -205,7 +205,7 @@ class server():
                     print("I did not send that. Will create a unicast connection with " + address_to_connect)
                     self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
             else: #el mensaje llego desde unicast
-                if args[1] is not None and args[1].getUsername() != "":
+                if args[1] is not None and args[1].getUsername() == "":
                     print("Ahora le pondre nombre a " + args[2])
                     args[1].setUsername(args[2])
 
