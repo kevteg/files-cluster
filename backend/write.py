@@ -181,11 +181,9 @@ class server():
                 print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", data)
                 #Aqui se procesa ese mensaje
                 information = data.decode('utf-8').split(':')
-                self.sendToClient(client, data)
                 send, message = self.typeOfMessage(information[0], [True, client, information[1]])
                 if send:
                     self.sendToClient(client, message)
-                print(client.getUsername())
         except (KeyboardInterrupt, SystemExit):
             self.tcp_socket.close()
             self.dowork = False
@@ -257,8 +255,6 @@ class server():
                 print("Check if I have those files")
                 current_files = directory.getFilesAtDirectory(self.directory)
                 petition = []
-                print("receiving: ")
-                print(user_files)
                 for _file in user_files:
                     if _file not in current_files:
                         petition.append(_file)
