@@ -191,7 +191,7 @@ class server():
         client.getSocket().close()
 
     def sendToClient(self, client, data):
-        client.getSocket().send(data.recv(1024))
+        client.getSocket().send(data.encode())
 
     def processUnicastConnection(self, args):
         #Si la dirección es diferente a la propia
