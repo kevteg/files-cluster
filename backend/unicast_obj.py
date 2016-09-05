@@ -1,6 +1,6 @@
 import socket
 class uniObj():
-    def __init__(self, socket, username = "", address = None):
+    def __init__(self, socket, username = "", address = ""):
         self.username = username
         self.socket = socket
         self.address = address
@@ -15,7 +15,7 @@ class uniObj():
         self.address = address
 
     def getAddress(self):
-        return self.address
+        return str(self.address)
 
     def getSocket(self):
         return self.socket

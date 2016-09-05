@@ -19,18 +19,19 @@ class server():
     def __init__(self, group_name, username, interface, dirc):
         group, self.MYPORT = self.getConnectionInfo(group_name)
         self.directory = dirc
+        self.interface = interface
+        self.username = username
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
         if group is not None:
             try:
-                self.interface = interface
                 # group = "fe80::351d:ce3:a858:f551"
+                if directory.getFilesAtDirectory(self.directory) is None:
+                    raise ValueError("That directory does not exist")
                 print("Created IP: " + group + ", port: " + str(self.MYPORT))
                 # print(socket.getaddrinfo(group, None))
                 self.addrinfo = socket.getaddrinfo(group, None)[0]
-                self.username = username
                 # Crea el socket del tipo IPv6
-
                 self.multicast_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
                 # se hace bind en ese puerto
                 self.multicast_sock.bind(('', self.MYPORT))
@@ -42,7 +43,7 @@ class server():
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
             except Exception as e:
-                print("Error: Is IPv6 activated?", file=sys.stderr)
+                print("Error: ")
                 print(e)
                 exit(-1)
         else:
@@ -105,8 +106,7 @@ class server():
             link_local = self.getOwnLinkLocal(connect_info[1])
             return connect_info[0], connect_info[1], not(link_local == connect_info[0])
         except:
-            print("Error: could not find link local address", file=sys.stderr)
-            return "", "", False
+            raise ValueError("Error: could not find link local address")
 
 
     #This one connects to others socket
@@ -117,7 +117,6 @@ class server():
             addr = socket.getaddrinfo(address_to_connect + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
             sock.connect(addr[-1])
             print ("Unicast connection with ", name)
-            print (addr[-1][0])
             #Este diccionario contiene todos los hilos que manejan los sockets de los clientes
             new_server = uniObj(username = name, socket = sock, address = addr[-1][0])
             self.unicast_connected_to[new_server] = threading.Thread(daemon=True, name='tcpConnectedTo'+name, target=self.tcpConnectedTo, args=[new_server])
@@ -131,13 +130,17 @@ class server():
     def tcpConnectedTo(self, server):
         #El primer mensaje deberia ser un saludo
         send, message = self.typeOfMessage('greetings')
-        while send:
-            time.sleep(1)
+        if send:
             self.sendToServer(server, message)
         try:
             while self.dowork:
                 data = server.getSocket().recv(1024).decode()
                 print ('Received from ' + server.getUsername() + ':', repr(data))
+                information = data.split(':')
+                send, message = self.typeOfMessage(information[0], [True, server, information[1]])
+                if send:
+                    self.sendToClient(server, message)
+
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
         # print("chau")
@@ -201,13 +204,33 @@ class server():
                 if args is not None and not(connect):
                     print("I sent that UDP message!")
                 else:
-                    #revisar si ya esta esa conexión
-                    print("I did not send that. Will create a unicast connection with " + address_to_connect)
-                    self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
+                    is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
+                    if unicastObject is None:
+                        print("I did not send that. Will create a unicast connection with " + address_to_connect)
+                        self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
+                    else:
+                        print("Already connected to " + args[2])
+
             else: #el mensaje llego desde unicast
                 if args[1] is not None and args[1].getUsername() == "":
-                    print("Ahora le pondre nombre a " + args[2])
+                    print("Changing client name to: " + args[2])
                     args[1].setUsername(args[2])
+
+    def findUnicastObjet(self, address, interface):
+        uni_object = None
+        is_server = False
+        for uni in self.unicast_connected_to.keys():
+            if uni.getAddress() == address + "%" + interface:
+                uni_object = uni
+                break
+        if uni_object is None:
+            for uni in self.unicast_connections.keys():
+                if uni.getAddress() == address + "%" + interface:
+                    uni_object = uni
+                    is_server = True
+                    break
+        return is_server, uni_object
+
 
 
     def sendUserName(self, args):
@@ -228,8 +251,7 @@ class server():
         if args:
             address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
             user_files = eval(args[2])
-
-            if args is not None and not(connect):
+            if not(connect):
                 print("I sent that UDP message!")
             else:
                 print("Check if I have those files")
@@ -240,8 +262,16 @@ class server():
                 for _file in user_files:
                     if _file not in current_files:
                         petition.append(_file)
-                print("Gonna ask for:")
-                print(petition)
+
+                if petition != []:
+                    print("Gonna ask for: ")
+                    print(petition)
+                    is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
+                    if is_server:
+                        self.sendToClient(unicastObject, "Need: " + str(petition))
+                    else:
+                        self.sendToServer(unicastObject, "Need: " + str(petition))
+
                 #Trabajar en la parte de tcp
 
     def sendToGroup(self, message):
