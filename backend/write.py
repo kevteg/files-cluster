@@ -263,12 +263,13 @@ class server():
                     print("Gonna ask for: ")
                     print(petition)
                     is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
-                    if is_server:
-                        self.sendToClient(unicastObject, "Need: " + str(petition))
+                    if unicastObject:
+                        if is_server:
+                            self.sendToClient(unicastObject, "Need: " + str(petition))
+                        else:
+                            self.sendToServer(unicastObject, "Need: " + str(petition))
                     else:
-                        self.sendToServer(unicastObject, "Need: " + str(petition))
-
-                #Trabajar en la parte de tcp
+                        print("Not connected to that host yet")
 
     def sendToGroup(self, message):
         print("Sending to group: " + message)
