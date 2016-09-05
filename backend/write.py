@@ -229,18 +229,25 @@ class server():
                     break
         return is_server, uni_object
 
-
+    def sendFiles(self, args):
+        #Args[1] a quien se le van a mandar los archivos
+        #Args[2] archivos a enviar
+        print("Mandare estos archivos: ")
+        if args[0]:
+            print(args[1])
+            print(args[2])
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
 
     def typeOfMessage(self, type, args = None):
-        #retorna si va a responder y el mensaje que enviara al grupo
+        #retorna si va a responder y el mensaje que enviara si es que lo va a mandar
         methods =  {
             'greetings': (True, self.sendUserName),
             'connection': (False, self.processUnicastConnection),
-            'list': (True, directory.getFilesAtDirectory),
-            'files': (False, self.checkFiles),
+            'list': (True, directory.getFilesAtDirectory),#Genera la lista de archivos
+            'files': (False, self.checkFiles),#Revisa los archivos que están llegando
+            'need': (False, self.sendFiles),#Archivos que necesita el otro host
         }.get(type, (False, (lambda args: "Error")))
         return methods[0], methods[1](args)
 
@@ -265,9 +272,9 @@ class server():
                     is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
                     if unicastObject:
                         if is_server:
-                            self.sendToClient(unicastObject, "Need: " + str(petition))
+                            self.sendToClient(unicastObject, "need: " + str(petition))
                         else:
-                            self.sendToServer(unicastObject, "Need: " + str(petition))
+                            self.sendToServer(unicastObject, "need: " + str(petition))
                     else:
                         print("Not connected to that host yet")
 
