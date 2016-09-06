@@ -134,21 +134,29 @@ class server():
             self.sendToServer(server, message)
         try:
             while self.dowork:
-                data = server.getSocket().recv(1024).decode()
-                print ('Received from ' + server.getUsername() + ':', repr(data))
-                information = data.split(':')
-                send, message = self.typeOfMessage(information[0], [True, server, information[1]])
-                if send:
-                    self.sendToClient(server, message)
+                data = server.getSocket().recv(1024).decode() if not server.getReceiving() else server.getSocket().recv(1024)
+                if not server.getReceiving():
+                    print ('Received from ' + server.getUsername() + ':', repr(data))
+                    information = data.split(':')
+                    send, message = self.typeOfMessage(information[0], [True, server, information[1]])
+                    if send:
+                        self.sendToClient(server, message)
+                else:
+                    tmp = open("file", "wb")
+                    l = data
+                    while(l):
+                        tmp.write(l)
+                        l = server.getSocket().recv(1024)
+                    tmp.close()
 
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
         # print("chau")
         server.getSocket().close()
 
-    def sendToServer(self, server, data):
+    def sendToServer(self, server, data, is_byte = False):
         print ('Sending to ' + server.getUsername() + ':', repr(data))
-        server.getSocket().send(data.encode())
+        server.getSocket().send(data.encode() if not is_byte else data)
 
     #This one creates own tcp socket
     #aqui deberian ir la asignación de los hilos
@@ -190,8 +198,8 @@ class server():
 
         client.getSocket().close()
 
-    def sendToClient(self, client, data):
-        client.getSocket().send(data.encode())
+    def sendToClient(self, client, data, is_byte = False):
+        client.getSocket().send(data.encode() if not is_byte else data)
 
     def processUnicastConnection(self, args):
         #Si la dirección es diferente a la propia
@@ -202,7 +210,7 @@ class server():
                 if args is not None and not(connect):
                     print("I sent that UDP message!")
                 else:
-                    is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
+                    is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
                     if unicastObject is None:
                         print("I did not send that. Will create a unicast connection with " + address_to_connect)
                         self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
@@ -214,7 +222,7 @@ class server():
                     print("Changing client name to: " + args[2])
                     args[1].setUsername(args[2])
 
-    def findUnicastObjet(self, address, interface):
+    def findUnicastObject(self, address, interface):
         uni_object = None
         is_server = False
         for uni in self.unicast_connected_to.keys():
@@ -229,13 +237,38 @@ class server():
                     break
         return is_server, uni_object
 
+    def isObjServer(self, obj):
+        is_server = False
+        for uni in self.unicast_connections.keys():
+            if uni == obj:
+                is_server = True
+                break
+        return is_server
+
+
     def sendFiles(self, args):
         #Args[1] a quien se le van a mandar los archivos
         #Args[2] archivos a enviar
-        print("Mandare estos archivos: ")
+        if args[0] and eval(args[2]) != []:
+            is_server = self.isObjServer(args[1])
+            files = directory.getFilesObjects(self.directory)
+            names = directory.getFilesAtDirectory(self.directory, add_path = False, size = False)
+            for index, _file in enumerate(files, start = 0):
+                print("GOING TO SEND FILE " + names[index])
+                self.sendToClient(args[1], "send: " + str(names[index]))
+                l = _file.read(1024)
+                while(l):
+                    print("Sending..")
+                    if is_server:
+                        self.sendToClient(args[1], l, is_byte = True)
+                    else:
+                        self.sendToClient(args[1], l, is_byte = True)
+                    l = _file.read(1024)
+                self.sendToClient(args[1], "done: " + str(names[index]))
+
+    def receiveFile(self, args):
         if args[0]:
-            print(args[1])
-            print(args[2])
+            args[1].setReceiving(True)
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
@@ -248,6 +281,7 @@ class server():
             'list': (True, directory.getFilesAtDirectory),#Genera la lista de archivos
             'files': (False, self.checkFiles),#Revisa los archivos que están llegando
             'need': (False, self.sendFiles),#Archivos que necesita el otro host
+            'send': (False, self.receiveFile),#Cambiar el estado del objeto para recibir archivos
         }.get(type, (False, (lambda args: "Error")))
         return methods[0], methods[1](args)
 
@@ -269,7 +303,7 @@ class server():
                 if petition != []:
                     print("Gonna ask for: ")
                     print(petition)
-                    is_server, unicastObject = self.findUnicastObjet(address_to_connect, interface)
+                    is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
                     if unicastObject:
                         if is_server:
                             self.sendToClient(unicastObject, "need: " + str(petition))
