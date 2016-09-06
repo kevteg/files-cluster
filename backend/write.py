@@ -145,7 +145,7 @@ class server():
                         send = False
                         print("Error with received data")
                     if send:
-                        self.sendToClient(server, message)
+                        self.sendToServer(server, message)
                 else:
                     l = data
                     close = False
@@ -286,7 +286,7 @@ class server():
         if args[0]:
             self.askForFiles = False
             #Aqui se borra o se decide que hacer con el archivo local
-            self.tmp = open(str(args[2]), "wb")
+            self.tmp = open(self.directory + "/" + str(args[2]), "wb")
             args[1].setReceiving(True)
 
     def doneReceiving(self, args):
