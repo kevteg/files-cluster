@@ -42,6 +42,7 @@ class server():
                 self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
+                self.askForFiles = True
             except Exception as e:
                 print("Error: ")
                 print(e)
@@ -146,7 +147,7 @@ class server():
                     if send:
                         self.sendToClient(server, message)
                 else:
-                    tmp = open("file", "wb")
+                    self.tmp = open("file", "wb")
                     l = data
                     close = False
                     while(l and not close):
@@ -155,10 +156,10 @@ class server():
                         except:
                             pass
                         if not close:
-                            tmp.write(l)
+                            self.tmp.write(l)
                             l = server.getSocket().recv(1024)
                     server.setReceiving(False)
-                    tmp.close()
+                    self.tmp.close()
 
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
@@ -258,6 +259,7 @@ class server():
 
 
     def sendFiles(self, args):
+        #Sacar esto a un hiloooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
         #Args[1] a quien se le van a mandar los archivos
         #Args[2] archivos a enviar
         if args[0] and eval(args[2]) != []:
@@ -271,6 +273,7 @@ class server():
                 l = _file.read(1024)
                 while(l):
                     print("Sending..")
+                    #TODO:
                     if is_server:
                         self.sendToClient(args[1], l, is_byte = True)
                     else:
@@ -278,10 +281,18 @@ class server():
                     l = _file.read(1024)
                 time.sleep(15)
                 self.sendToClient(args[1], "done: " + str(names[index]))
+            self.sendToClient(args[1], "done: sending")
 
     def receiveFile(self, args):
         if args[0]:
+            self.askForFiles = False
+            #Aqui se borra o se decide que hacer con el archivo local
+            self.tmp = open(str(args[2]), "wb")
             args[1].setReceiving(True)
+
+    def doneReceiving(self, args):
+        if args[0]:
+            self.askForFiles = True
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
@@ -295,12 +306,13 @@ class server():
             'files': (False, self.checkFiles),#Revisa los archivos que están llegando
             'need': (False, self.sendFiles),#Archivos que necesita el otro host
             'send': (False, self.receiveFile),#Cambiar el estado del objeto para recibir archivos
+            'done': (False, self.doneReceiving)
         }.get(type, (False, (lambda args: "Error")))
         return methods[0], methods[1](args)
 
     def checkFiles(self, args):
         # test_directory = "/tmp/empty2"
-        if args:
+        if args and self.askForFiles:
             address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
             user_files = eval(args[2])
             if not(connect):
