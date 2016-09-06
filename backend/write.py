@@ -265,6 +265,7 @@ class server():
                     else:
                         self.sendToClient(args[1], l, is_byte = True)
                     l = _file.read(1024)
+                args[1].getSocket().shutdown(socket.SHUT_WR)
                 self.sendToClient(args[1], "done: " + str(names[index]))
 
     def receiveFile(self, args):
