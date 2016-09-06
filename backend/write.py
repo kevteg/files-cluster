@@ -259,7 +259,6 @@ class server():
 
 
     def sendFiles(self, args):
-        #Sacar esto a un hiloooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
         #Args[1] a quien se le van a mandar los archivos
         #Args[2] archivos a enviar
         if args[0] and eval(args[2]) != []:
@@ -288,11 +287,12 @@ class server():
             self.askForFiles = False
             self.count = False
             #Aqui se borra o se decide que hacer con el archivo local
-            self.tmp = open(self.directory + "/" + str(args[2]), "wb")
+            self.tmp = open(self.directory + "/" + str(args[2]).replace(" ", ""), "wb")
             args[1].setReceiving(True)
 
     def doneReceiving(self, args):
         if args[0]:
+            print("DONE RECEIVING")
             self.askForFiles = True
             self.count = True
 
