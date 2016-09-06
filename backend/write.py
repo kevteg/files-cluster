@@ -287,7 +287,7 @@ class server():
             self.askForFiles = False
             self.count = False
             #Aqui se borra o se decide que hacer con el archivo local
-            self.tmp = open(self.directory + "/" + str(args[2]).replace(" ", ""), "wb")
+            self.tmp = open(self.directory + "/" + str(args[2]).strip(), "wb")
             args[1].setReceiving(True)
 
     def doneReceiving(self, args):
