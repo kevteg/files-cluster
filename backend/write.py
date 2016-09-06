@@ -43,6 +43,7 @@ class server():
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
                 self.askForFiles = True
+                self.count = True
             except Exception as e:
                 print("Error: ")
                 print(e)
@@ -285,6 +286,7 @@ class server():
     def receiveFile(self, args):
         if args[0]:
             self.askForFiles = False
+            self.count = False
             #Aqui se borra o se decide que hacer con el archivo local
             self.tmp = open(self.directory + "/" + str(args[2]), "wb")
             args[1].setReceiving(True)
@@ -292,6 +294,7 @@ class server():
     def doneReceiving(self, args):
         if args[0]:
             self.askForFiles = True
+            self.count = True
 
     def sendUserName(self, args):
         return 'connection: ' + self.username
@@ -367,7 +370,7 @@ class server():
             while self.dowork:
                 time.sleep(1)
                 send_files_count_secs = send_files_count_secs + 1
-                if send_files_count_secs > self.time_to_send_list_of_files:
+                if self.count and send_files_count_secs > self.time_to_send_list_of_files:
                     self.send_list_of_files = True
                     send_files_count_secs = 0
         except (KeyboardInterrupt, SystemExit):
