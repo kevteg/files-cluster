@@ -144,9 +144,14 @@ class server():
                 else:
                     tmp = open("file", "wb")
                     l = data
-                    while(l):
+                    close = False
+                    while(l and not close):
                         tmp.write(l)
                         l = server.getSocket().recv(1024)
+                        try:
+                            close = True if (l.decode().split(":")[0] == "done") else False
+                        except:
+                            pass
                     server.setReceiving(False)
                     tmp.close()
 
