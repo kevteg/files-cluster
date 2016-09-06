@@ -268,7 +268,7 @@ class server():
             for index, _file in enumerate(files, start = 0):
                 print("GOING TO SEND FILE " + names[index])
                 self.sendToClient(args[1], "send: " + str(names[index]))
-                time.sleep(15)
+                time.sleep(0.5)
                 l = _file.read(1024)
                 while(l):
                     print("Sending..")
@@ -278,7 +278,7 @@ class server():
                     else:
                         self.sendToClient(args[1], l, is_byte = True)
                     l = _file.read(1024)
-                time.sleep(15)
+                time.sleep(0.5)
                 self.sendToClient(args[1], "done: " + str(names[index]))
             self.sendToClient(args[1], "done: sending")
 
