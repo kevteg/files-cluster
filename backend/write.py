@@ -147,7 +147,6 @@ class server():
                     if send:
                         self.sendToClient(server, message)
                 else:
-                    self.tmp = open("file", "wb")
                     l = data
                     close = False
                     while(l and not close):
