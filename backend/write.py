@@ -138,7 +138,11 @@ class server():
                 if not server.getReceiving():
                     print ('Received from ' + server.getUsername() + ':', repr(data))
                     information = data.split(':')
-                    send, message = self.typeOfMessage(information[0], [True, server, information[1]])
+                    try:
+                        send, message = self.typeOfMessage(information[0], [True, server, information[1]])
+                    except:
+                        send = False
+                        print("Error with received data")
                     if send:
                         self.sendToClient(server, message)
                 else:
