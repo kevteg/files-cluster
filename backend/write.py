@@ -146,12 +146,12 @@ class server():
                     l = data
                     close = False
                     while(l and not close):
-                        tmp.write(l)
-                        l = server.getSocket().recv(1024)
                         try:
                             close = True if (l.decode().split(":")[0] == "done") else False
                         except:
                             pass
+                        tmp.write(l)
+                        l = server.getSocket().recv(1024)
                     server.setReceiving(False)
                     tmp.close()
 
