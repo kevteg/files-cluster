@@ -147,6 +147,7 @@ class server():
                     while(l):
                         tmp.write(l)
                         l = server.getSocket().recv(1024)
+                    server.setReceiving(False)
                     tmp.close()
 
         except (KeyboardInterrupt, SystemExit):
