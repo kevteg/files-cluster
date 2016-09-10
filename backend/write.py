@@ -276,8 +276,8 @@ class server():
                         self.sendToClient(args[1], l, is_byte = True)
                     l = _file.read(1024)
                 time.sleep(0.5)
-                # self.sendToClient(args[1], "done: " + str(names[index]))
-                self.sendToClient(args[1], l, is_byte = True)
+                self.sendToClient(args[1], "done: " + str(names[index]))
+                # self.sendToClient(args[1], l, is_byte = True)
             self.sendToClient(args[1], "done: sending")
 
     def receiveFile(self, args):
