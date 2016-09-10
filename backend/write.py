@@ -150,9 +150,14 @@ class server():
                 else:
                     l = data
                     close = False
-                    while(l):
-                        self.tmp.write(l)
-                        l = server.getSocket().recv(1024)
+                    while(l and not close):
+                        try:
+                            close = True if (l.decode().split(":")[0] == "done") else False
+                        except:
+                            pass
+                        if not close:
+                            self.tmp.write(l)
+                            l = server.getSocket().recv(1024)
                     server.setReceiving(False)
                     self.tmp.close()
 
