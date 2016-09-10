@@ -291,9 +291,8 @@ class server():
                 self.sendToClient(args[1], "send: " + str(names[index]))
                 time.sleep(0.5)
                 l = _file.read(1024)
+                print("Sending..")
                 while(l):
-                    print("Sending..")
-                    #TODO:
                     if is_server:
                         self.sendToClient(args[1], l, is_byte = True)
                     else:
