@@ -167,7 +167,8 @@ class server():
         server.getSocket().close()
 
     def sendToServer(self, server, data, is_byte = False):
-        print ('Sending to ' + server.getUsername() + ':', repr(data))
+        if not byte:
+            print ('Sending to ' + server.getUsername() + ':', repr(data))
         server.getSocket().send(data.encode() if not is_byte else data)
 
     #This one creates own tcp socket
@@ -228,6 +229,8 @@ class server():
         client.getSocket().close()
 
     def sendToClient(self, client, data, is_byte = False):
+        if not byte:
+            print ('Sending to ' + client.getUsername() + ':', repr(data))
         client.getSocket().send(data.encode() if not is_byte else data)
 
     def processUnicastConnection(self, args):
@@ -285,7 +288,6 @@ class server():
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
             names = directory.getFilesAtDirectory(self.directory, add_path = False, size = False)
             for index, _file in enumerate(files, start = 0):
-                print("GOING TO SEND FILE " + names[index])
                 self.sendToClient(args[1], "send: " + str(names[index]))
                 time.sleep(0.5)
                 l = _file.read(1024)
