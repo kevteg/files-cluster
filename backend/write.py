@@ -197,13 +197,30 @@ class server():
     def tcpConnection(self, client):
         try:
             while self.dowork:
-                data = client.getSocket().recv(1024)
-                print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", data)
-                #Aqui se procesa ese mensaje
-                information = data.decode('utf-8').split(':')
-                send, message = self.typeOfMessage(information[0], [True, client, information[1]])
-                if send:
-                    self.sendToClient(client, message)
+                data = client.getSocket().recv(1024).decode() if not client.getReceiving() else client.getSocket().recv(1024)
+                if not client.getReceiving():
+                    print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", repr(data))
+                    information = data.split(':')
+                    try:
+                        send, message = self.typeOfMessage(information[0], [True, client, information[1]])
+                    except:
+                        send = False
+                        print("Error with received data")
+                    if send:
+                        self.sendToClient(client, message)
+                else:
+                    l = data
+                    close = False
+                    while(l and not close):
+                        try:
+                            close = True if (l.decode().split(":")[0] == "done") else False
+                        except:
+                            pass
+                        if not close:
+                            self.tmp.write(l)
+                            l = client.getSocket().recv(1024)
+                    client.setReceiving(False)
+                    self.tmp.close()
         except (KeyboardInterrupt, SystemExit):
             self.tcp_socket.close()
             self.dowork = False
@@ -278,11 +295,13 @@ class server():
                     if is_server:
                         self.sendToClient(args[1], l, is_byte = True)
                     else:
-                        self.sendToClient(args[1], l, is_byte = True)
+                        self.sendToServer(args[1], l, is_byte = True)
                     l = _file.read(1024)
                 time.sleep(0.5)
-                self.sendToClient(args[1], "done: " + str(names[index]))
-                # self.sendToClient(args[1], l, is_byte = True)
+                if is_server:
+                    self.sendToClient(args[1], "done: " + str(names[index]))
+                else:
+                    self.sendToServer(args[1], "done: " + str(names[index]))
             self.sendToClient(args[1], "done: sending")
 
     def receiveFile(self, args):
