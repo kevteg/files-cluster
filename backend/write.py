@@ -258,7 +258,9 @@ class server():
         #Args[2] archivos a enviar
         if args[0] and eval(args[2]) != []:
             is_server = self.isObjServer(args[1])
-            files = directory.getFilesObjects(self.directory)
+            # print("Sendddding: " + args[2])
+            # print("Directory: " + self.directory)
+            files = directory.getFilesObjects(self.directory, files = eval(args[2]))
             names = directory.getFilesAtDirectory(self.directory, add_path = False, size = False)
             for index, _file in enumerate(files, start = 0):
                 print("GOING TO SEND FILE " + names[index])
