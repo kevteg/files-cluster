@@ -167,7 +167,7 @@ class server():
         server.getSocket().close()
 
     def sendToServer(self, server, data, is_byte = False):
-        if not byte:
+        if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
         server.getSocket().send(data.encode() if not is_byte else data)
 
@@ -229,7 +229,7 @@ class server():
         client.getSocket().close()
 
     def sendToClient(self, client, data, is_byte = False):
-        if not byte:
+        if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
         client.getSocket().send(data.encode() if not is_byte else data)
 
