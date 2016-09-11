@@ -315,7 +315,7 @@ class server():
                     while(l):
                         _size = sys.getsizeof(l)
                         print(_size)
-                        if _size <= 1057:
+                        if _size < 1057:
                             _s = int(1057 - sys.getsizeof(l))
                             l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
                         print(l)
