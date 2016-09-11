@@ -223,6 +223,7 @@ class server():
                     client.setReceiving(False)
                     self.tmp.close()
         except (KeyboardInterrupt, SystemExit):
+            print("ITS MEEEEEEEEEEE")
             self.tcp_socket.close()
             self.dowork = False
 
@@ -301,9 +302,10 @@ class server():
                 time.sleep(0.5)
                 if is_server:
                     self.sendToClient(args[1], "done: " + str(names[index]))
+                    self.sendToClient(args[1], "done: sending")
                 else:
                     self.sendToServer(args[1], "done: " + str(names[index]))
-            self.sendToClient(args[1], "done: sending")
+                    self.sendToServer(args[1], "done: sending")
 
     def receiveFile(self, args):
         if args[0]:
