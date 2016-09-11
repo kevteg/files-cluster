@@ -3,12 +3,9 @@ import os
 
 def getFilesObjects(directory, files = None, binary = True):
     all_files = []
-    files_name = None
-    if files:
-         files_name = [l[0] for l in files]
     # print("needed_files: ")
     # print(files_name)
-    files = getFilesAtDirectory(directory, files_name, add_path = True, size = False)
+    files = getFilesAtDirectory(directory, files, add_path = True, size = False)
     # print(files)
     try:
         for file_name in files:
@@ -22,6 +19,8 @@ def getFilesAtDirectory(directory, needed_files = None, add_path = False, size =
     #retorna none si no existe el directorio y [] si está vacio
     try:
         results = []
+        if needed_files:
+             needed_files = [l[0] for l in needed_files]
         for (dirpath, dirnames, filenames) in os.walk(directory):
             if needed_files:
                 if size:

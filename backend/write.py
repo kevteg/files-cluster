@@ -286,7 +286,7 @@ class server():
             # print("Sendddding: " + args[2])
             # print("Directory: " + self.directory)
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
-            names = directory.getFilesAtDirectory(self.directory, add_path = False, size = False)
+            names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, size = False)
             for index, _file in enumerate(files, start = 0):
                 self.sendToClient(args[1], "send: " + str(names[index]))
                 time.sleep(0.5)
