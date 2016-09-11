@@ -43,3 +43,10 @@ $("#close-setting").click(function(){
 	$(".main-panel").css("display","block")
 	$(".setting-panel").css("display","none")
 });
+
+$("#floating-button").click(function(){
+    $("body").removeClass('menu-active')
+		console.log("new");
+		$('#newModal').modal('show');
+		//$('.modal-backdrop').remove();
+});
