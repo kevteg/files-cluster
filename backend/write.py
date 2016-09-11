@@ -136,7 +136,7 @@ class server():
             self.sendToServer(server, message)
         try:
             while self.dowork:
-                data = server.getSocket().recv(1024).decode().rstrip('\0') if not server.getReceiving() else server.getSocket().recv(1024)
+                data = server.getSocket().recv(1024).decode().rstrip('\0').lstrip('\0') if not server.getReceiving() else server.getSocket().recv(1024)
                 if not server.getReceiving():
                     print ('Received from ' + server.getUsername() + ':', repr(data))
                     information = data.split(':')
@@ -153,7 +153,7 @@ class server():
                     while(l and not close):
                         print("receiving as client")
                         try:
-                            close = True if (l.decode().split(":")[0] == "done") else False
+                            close = True if (l.decode().rstrip('\0').lstrip('\0').split(":")[0] == "done") else False
                         except:
                             pass
                         if not close:
