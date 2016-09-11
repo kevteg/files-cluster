@@ -178,7 +178,7 @@ class server():
         if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
             _s = int(1024 - sys.getsizeof(data))
-            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+            data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         server.getSocket().send(data.encode() if not is_byte else data)
 
     #This one creates own tcp socket
@@ -208,12 +208,12 @@ class server():
     def tcpConnection(self, client):
         try:
             while self.dowork:
-                data = client.getSocket().recv(1024).decode().rstrip('\0') if not client.getReceiving() else client.getSocket().recv(1024)
+                data = client.getSocket().recv(1024).decode().rstrip('\0').lstrip('\0') if not client.getReceiving() else client.getSocket().recv(1024)
                 if not client.getReceiving():
                     print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", repr(data))
                     information = data.split(':')
                     try:
-                        send, message = self.typeOfMessage(information[0], [True, client, information[1]])
+                        send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
                     except:
                         send = False
                         print("Error with received data")
@@ -226,24 +226,22 @@ class server():
                         print("receiving as server")
                         try:
                             #strip aqui:
-                            close = True if (l.decode().rstrip('\0').split(":")[0] == "done") else False
+                            close = True if (l.decode().lstrip('\0').rstrip('\0').split(":")[0] == "done") else False
                         except:
                             pass
                         if not close:
                             self.tmp.write(l)
                             print(l)
-                            try:
-                                print(l.decode().rstrip('\0'))
-                            except:
-                                pass
                             l = client.getSocket().recv(1024)
-                    print("hola")
                     client.setReceiving(False)
                     print(l)
                     try:
-                        print(l.decode())
-                    except:
-                        pass
+                        if l:
+                            data = l.decode().rstrip('\0').lstrip('\0')
+                            information = data.split(':')
+                            send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
+                    except Exception as e:
+                        print(e)
                     print("no recibo mas de este archivo")
                     self.tmp.close()
         except Exception as e:
@@ -257,7 +255,7 @@ class server():
         if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
             _s = int(1024 - sys.getsizeof(data))
-            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+            data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         client.getSocket().send(data.encode() if not is_byte else data)
 
     def processUnicastConnection(self, args):
