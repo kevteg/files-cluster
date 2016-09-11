@@ -223,7 +223,7 @@ class server():
                         except:
                             pass
                         if not close:
-                            self.tmp.write(l)
+                            self.tmp.write(l.decode().lstrip('\0').rstrip('\0').encode())
                             print(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
