@@ -159,6 +159,12 @@ class server():
                         if not close:
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
+                    print(l)
+                    try:
+                        print(l.decode())
+                    except:
+                        pass
+                    print("no recibo mas de este archivo")
                     server.setReceiving(False)
                     self.tmp.close()
 
@@ -231,7 +237,8 @@ class server():
                         pass
                     print("no recibo mas de este archivo")
                     self.tmp.close()
-        except (KeyboardInterrupt, SystemExit):
+        except Exception as e:
+            print(e)
             self.tcp_socket.close()
             self.dowork = False
 
