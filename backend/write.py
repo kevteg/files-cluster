@@ -313,10 +313,10 @@ class server():
                     l = _file.read(1024)
                     print("Sending..")
                     while(l):
-                        _size = sys.getsizeof(l)
+                        _size = len(l)
                         print(_size)
-                        if _size < 1057:
-                            _s = int(1057 - sys.getsizeof(l))
+                        if _size < 1024:
+                            _s = int(1024 - _size)
                             l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
                         print(l)
                         if is_server:
