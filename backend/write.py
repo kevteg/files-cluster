@@ -162,7 +162,8 @@ class server():
                     server.setReceiving(False)
                     self.tmp.close()
 
-        except (KeyboardInterrupt, SystemExit):
+        except Exception as e:
+            print(e)
             self.dowork = False
         # print("chau")
         server.getSocket().close()
