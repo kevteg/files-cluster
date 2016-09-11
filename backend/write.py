@@ -145,6 +145,7 @@ class server():
                     except:
                         send = False
                         print("Error with received data")
+                        self.deleteConnection(server)
                         self.doneReceiving([True])
                         break
                     if send:
@@ -213,6 +214,7 @@ class server():
                     except:
                         send = False
                         print("Error with received data")
+                        self.deleteConnection(client)
                         self.doneReceiving([True])
                         break
                     if send:
@@ -291,6 +293,17 @@ class server():
                     is_server = True
                     break
         return is_server, uni_object
+
+    def deleteConnection(self, obj):
+        for uni in self.unicast_connected_to.keys():
+            if uni.getAddress() == obj.getAddress():
+                self.unicast_connected_to.pop(obj)
+                break
+        else:
+            for uni in self.unicast_connections.keys():
+                if uni.getAddress() == obj.getAddress():
+                    self.unicast_connections.pop(obj)
+                    break
 
     def isObjServer(self, obj):
         is_server = False
