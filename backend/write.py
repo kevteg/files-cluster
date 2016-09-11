@@ -145,13 +145,15 @@ class server():
                     except:
                         send = False
                         print("Error with received data")
+                        self.doneReceiving([True])
+                        break
                     if send:
                         self.sendToServer(server, message)
                 else:
                     l = data
                     close = False
+                    print("receiving as client")
                     while(l and not close):
-                        print("receiving as client")
                         try:
                             close = True if (l.decode().rstrip('\0').lstrip('\0').split(":")[0] == "done") else False
                         except:
@@ -211,20 +213,22 @@ class server():
                     except:
                         send = False
                         print("Error with received data")
+                        self.doneReceiving([True])
+                        break
                     if send:
                         self.sendToClient(client, message)
                 else:
                     l = data
                     close = False
+                    print("receiving as server")
                     while(l and not close):
-                        print("receiving as server")
                         try:
                             close = True if (l.decode().lstrip('\0').rstrip('\0').split(":")[0] == "done") else False
                         except:
                             pass
                         if not close:
                             self.tmp.write(l)
-                            print(l)
+                            # print(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
                     # print(l)
@@ -318,7 +322,7 @@ class server():
                         if _size < 1024:
                             _s = int(1024 - _size)
                             l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
-                        print(l)
+                        # print(l)
                         if is_server:
                             self.sendToClient(args[1], l, is_byte = True)
                         else:
