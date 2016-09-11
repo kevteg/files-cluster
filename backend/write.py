@@ -159,12 +159,6 @@ class server():
                         if not close:
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
-                    print(l)
-                    try:
-                        print(l.decode())
-                    except:
-                        pass
-                    print("no recibo mas de este archivo")
                     server.setReceiving(False)
                     self.tmp.close()
 
@@ -225,7 +219,6 @@ class server():
                     while(l and not close):
                         print("receiving as server")
                         try:
-                            #strip aqui:
                             close = True if (l.decode().lstrip('\0').rstrip('\0').split(":")[0] == "done") else False
                         except:
                             pass
@@ -234,14 +227,15 @@ class server():
                             print(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
-                    print(l)
-                    try:
-                        if l:
-                            data = l.decode().rstrip('\0').lstrip('\0')
-                            information = data.split(':')
-                            send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
-                    except Exception as e:
-                        print(e)
+                    # print(l)
+                    # try:
+                    #     if l:
+                    #         data = l.decode().rstrip('\0').lstrip('\0')
+                    #         print(data)
+                    #         information = data.split(':')
+                    #         send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
+                    # except Exception as e:
+                    #     print(e)
                     print("no recibo mas de este archivo")
                     self.tmp.close()
         except Exception as e:
