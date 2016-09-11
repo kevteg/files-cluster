@@ -175,10 +175,12 @@ class server():
         server.getSocket().close()
 
     def sendToServer(self, server, data, is_byte = False):
+        _s = int(1024 - sys.getsizeof(data))
         if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
-        _s = int(1024 - sys.getsizeof(data))
-        data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+        else:
+            data = data + (struct.pack(str(_s) + 'B',*([0]*_s)))
         server.getSocket().send(data.encode() if not is_byte else data)
 
     #This one creates own tcp socket
@@ -254,10 +256,12 @@ class server():
         client.getSocket().close()
 
     def sendToClient(self, client, data, is_byte = False):
+        _s = int(1024 - sys.getsizeof(data))
         if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
-        _s = int(1024 - sys.getsizeof(data))
-        data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+        else:
+            data = data + (struct.pack(str(_s) + 'B',*([0]*_s)))
         client.getSocket().send(data.encode() if not is_byte else data)
 
     def processUnicastConnection(self, args):
