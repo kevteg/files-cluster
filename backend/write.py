@@ -177,8 +177,8 @@ class server():
     def sendToServer(self, server, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
-            _s = int(1024 - sys.getsizeof(data))
-            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+        _s = int(1024 - sys.getsizeof(data))
+        data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
         server.getSocket().send(data.encode() if not is_byte else data)
 
     #This one creates own tcp socket
