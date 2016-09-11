@@ -151,6 +151,7 @@ class server():
                     l = data
                     close = False
                     while(l and not close):
+                        print("receiving as client")
                         try:
                             close = True if (l.decode().split(":")[0] == "done") else False
                         except:
@@ -213,6 +214,7 @@ class server():
                     l = data
                     close = False
                     while(l and not close):
+                        print("receiving as server")
                         try:
                             close = True if (l.decode().split(":")[0] == "done") else False
                         except:
@@ -223,7 +225,6 @@ class server():
                     client.setReceiving(False)
                     self.tmp.close()
         except (KeyboardInterrupt, SystemExit):
-            print("ITS MEEEEEEEEEEE")
             self.tcp_socket.close()
             self.dowork = False
 
@@ -301,9 +302,11 @@ class server():
                     l = _file.read(1024)
                 time.sleep(0.5)
                 if is_server:
+                    print("I AM SERVER")
                     self.sendToClient(args[1], "done: " + str(names[index]))
                     self.sendToClient(args[1], "done: sending")
                 else:
+                    print("I AM CLIENT")
                     self.sendToServer(args[1], "done: " + str(names[index]))
                     self.sendToServer(args[1], "done: sending")
 
