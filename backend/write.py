@@ -225,12 +225,19 @@ class server():
                     while(l and not close):
                         print("receiving as server")
                         try:
-                            close = True if (l.decode().split(":")[0] == "done") else False
+                            #strip aqui:
+                            close = True if (l.decode().rstrip('\0').split(":")[0] == "done") else False
                         except:
                             pass
                         if not close:
                             self.tmp.write(l)
+                            print(l)
+                            try:
+                                print(l.decode().rstrip('\0'))
+                            except:
+                                pass
                             l = client.getSocket().recv(1024)
+                    print("hola")
                     client.setReceiving(False)
                     print(l)
                     try:
@@ -249,8 +256,8 @@ class server():
     def sendToClient(self, client, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
-            _s = int(1024 - sys.getsizeof(data))
-            data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
+        _s = int(1024 - sys.getsizeof(data))
+        data = data + (struct.pack(str(_s) + 'B',*([0]*_s))).decode()
         client.getSocket().send(data.encode() if not is_byte else data)
 
     def processUnicastConnection(self, args):
