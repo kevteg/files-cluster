@@ -331,7 +331,7 @@ class server():
                     print("Sending..")
                     while(l):
                         _size = len(l)
-                        print(_size)
+                        # print(_size)
                         if _size < 1024:
                             _s = int(1024 - _size)
                             l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
