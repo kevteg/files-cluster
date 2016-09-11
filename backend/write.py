@@ -224,6 +224,12 @@ class server():
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
+                    print(l)
+                    try:
+                        print(l.decode())
+                    except:
+                        pass
+                    print("no recibo mas de este archivo")
                     self.tmp.close()
         except (KeyboardInterrupt, SystemExit):
             self.tcp_socket.close()
@@ -305,10 +311,12 @@ class server():
                 if is_server:
                     print("I AM SERVER")
                     self.sendToClient(args[1], "done: " + str(names[index]))
+                    time.sleep(0.5)
                     self.sendToClient(args[1], "done: sending")
                 else:
                     print("I AM CLIENT")
                     self.sendToServer(args[1], "done: " + str(names[index]))
+                    time.sleep(0.5)
                     self.sendToServer(args[1], "done: sending")
 
     def receiveFile(self, args):
