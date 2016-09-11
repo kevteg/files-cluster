@@ -19,7 +19,7 @@ h1,
 h2,
 h3 {
   color: #FF6B6B;
-  margin: 0 0 27px;
+  font-size: 1.5em;
 }
 
 /*
@@ -158,4 +158,43 @@ body.menu-active div#content {
 
 body.menu-active div#content .menu-trigger {
   left: 294px;
+}
+
+/*PANEL PRINCIPAL*/
+.main-panel button i{
+  margin-right: 0.4em;
+}
+
+.main-panel .btn{
+  background-color: #F5F5F5;
+  color: #333;
+}
+
+.main-panel .btn:hover{
+  background-color: #CFD8DC;
+}
+
+.modal-backdrop {
+    position: inherit;
+}
+
+#deleteModal .btn{
+  display: block;
+  background-color: white;
+  font-size: 0.9em;
+  color: #333;
+}
+
+#deleteModal .btn:hover{
+  background-color: #CFD8DC;
+}
+
+.modal-footer{
+  text-align: center;
+  font-size: 0.7em;
+}
+
+/*SETTINGs*/
+.setting-panel{
+  display: none;
 }

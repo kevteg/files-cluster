@@ -12,10 +12,10 @@
           <!-- Navigation -->
         <nav id="slide-menu">
         	<ul>
-        		<li class="timeline"><i class="fa fa-plus"></i>Nuevo Directorio</li>
-        		<li class="events"><i class="fa fa-trash"></i>Eliminar Directorio</li>
-        		<li class="calendar"><i class="fa fa-refresh"></i>Sincronizar</li>
-        		<li class="sep settings"><i class="fa fa-cogs"></i>Configuración</li>
+        		<li class="new"><i class="fa fa-plus"></i>Nuevo Directorio</li>
+        		<li class="delete"><i class="fa fa-trash"></i>Eliminar Directorio</li>
+        		<li class="sync"><i class="fa fa-refresh"></i>Sincronizar</li>
+        		<li class="settings"><i class="fa fa-cogs"></i>Configuración</li>
         		<!--<li class="logout">Logout</li>-->
         	</ul>
         </nav>
@@ -25,14 +25,59 @@
       <div id="content">
       	<div class="menu-trigger"><i class="fa fa-bars"></i></div>
         <!-- Sections for each directory -->
-        <section>
-          <h3>Administración</h3>
-          <div>
-            <button class="btn">Settings</button>
-            <button class="btn" >Open local directory</button>
+        <section class="main-panel">
+          <div class="directory">
+            <h3>Administración</h3>
+            <button class="btn"><i class="fa fa-cog"></i>Configurar</button>
+            <button class="btn"><i class="fa fa-folder-open-o"></i>Abrir directorio local</button>
+            <button class="btn"><i class="fa fa-refresh"></i>Sincronizar</button>
           </div>
-          <button class="btn" type="button" name="button">Sync</button>
+          <div id="newModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h3 class="modal-title">Nuevo Directorio</h3>
+                </div>
+                <div class="modal-body">
+                  <p>Nombre del directorio</p>
+                  <input type="text" placeholder="Nombre"></input>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Crear</button>
+                </div>
+            </div>
+
+          </div>
+         </div>
+         <div id="deleteModal" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3 class="modal-title">Eliminar Directorio</h3>
+              </div>
+              <div class="modal-body">
+                <button type="button" class="btn" data-dismiss="modal">Nombre del directorio 1</button>
+                <button type="button" class="btn" data-dismiss="modal">Nombre del directorio 2</button>
+              </div>
+              <div class="modal-footer text-left">
+                <p>Haz click en el directorio que deseas eliminar</p>
+              </div>
+          </div>
+
+         </div>
+        </div>
         </section>
+        <section class="setting-panel">
+          <h3>Configuración</h3>
+          <button id="close-setting" class="btn">Guardar</button>
+        </section>
+
         <!-- Floating button -->
         <section>
 
