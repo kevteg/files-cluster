@@ -171,7 +171,7 @@ class server():
     def sendToServer(self, server, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
-            _s = int(1057 - sys.getsizeof(data))
+            _s = int(1024 - sys.getsizeof(data))
             data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         server.getSocket().send(data.encode() if not is_byte else data)
 
@@ -248,7 +248,7 @@ class server():
     def sendToClient(self, client, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
-            _s = int(1057 - sys.getsizeof(data))
+            _s = int(1024 - sys.getsizeof(data))
             data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         client.getSocket().send(data.encode() if not is_byte else data)
 
@@ -313,10 +313,11 @@ class server():
                     l = _file.read(1024)
                     print("Sending..")
                     while(l):
-                        _size = int(1057 - sys.getsizeof(data))
+                        _size = sys.getsizeof(l)
                         print(_size)
-                        if _size < 1057:
-                            l = l + (struct.pack(str(_size) + 'B',*([0]*_size)))
+                        if _size <= 1057:
+                            _s = int(1057 - sys.getsizeof(l))
+                            l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
                         print(l)
                         if is_server:
                             self.sendToClient(args[1], l, is_byte = True)
