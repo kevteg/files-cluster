@@ -11,6 +11,7 @@ import subprocess
 import sys
 from unicast_obj import uniObj
 import directory
+# import ipaddress
 '''
     Author: Keeeevin
     TODO: Write docs of each function
@@ -24,30 +25,34 @@ class server():
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
         if group is not None:
-            try:
-                # group = "fe80::351d:ce3:a858:f551"
+            # try:
+                # group = 'ff02::1'
                 if directory.getFilesAtDirectory(self.directory) is None:
                     raise ValueError("That directory does not exist")
                 print("Created IP: " + group + ", port: " + str(self.MYPORT))
-                # print(socket.getaddrinfo(group, None))
-                self.addrinfo = socket.getaddrinfo(group, None)[0]
+
+                self.addrinfo = socket.getaddrinfo(group, self.MYPORT)[0]
+                print(self.addrinfo)
                 # Crea el socket del tipo IPv6
                 self.multicast_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
                 # se hace bind en ese puerto
                 self.multicast_sock.bind(('', self.MYPORT))
+
+                interface_index = socket.if_nametoindex(self.interface)
+                # Unirse al grupo multicast
                 group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
-                mreq = group_bin + struct.pack('@I', 0)
-                # ttl_bin = struct.pack('@I', 1)
-                # self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
-                self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
+                mreq = struct.pack('@I', interface_index)
+                self.multicast_sock.setsockopt(socket.IPPROTO_IPV6,socket.IPV6_MULTICAST_IF, mreq)
+                _group = socket.inet_pton(socket.AF_INET6, group) + mreq
+                self.multicast_sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, _group)
                 self.unicast_connected_to = {}
                 self.unicast_connections = {}
                 self.askForFiles = True
                 self.count = True
-            except Exception as e:
-                print("Error: ")
-                print(e)
-                exit(-1)
+            # except Exception as e:
+            #     print("Error: ")
+            #     print(e)
+            #     exit(-1)
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
