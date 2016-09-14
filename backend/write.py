@@ -17,7 +17,7 @@ import directory
     TODO: Write docs of each function
 '''
 class server():
-    def __init__(self, group_name, username, interface, dirc):
+    def __init__(self, group_name, username, dirc, interface = None):
         group, self.MYPORT = self.getConnectionInfo(group_name)
         self.directory = dirc
         self.interface = interface
@@ -25,19 +25,26 @@ class server():
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
         if group is not None:
-            # try:
-                # group = 'ff02::1'
+            try:
                 if directory.getFilesAtDirectory(self.directory) is None:
                     raise ValueError("That directory does not exist")
                 print("Created IP: " + group + ", port: " + str(self.MYPORT))
-
                 self.addrinfo = socket.getaddrinfo(group, self.MYPORT)[0]
                 print(self.addrinfo)
                 # Crea el socket del tipo IPv6
                 self.multicast_sock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
                 # se hace bind en ese puerto
                 self.multicast_sock.bind(('', self.MYPORT))
-
+                if self.interface is None:
+                    interfaces = [i[1] for i in socket.if_nameindex() ]
+                    for index, int in enumerate(interfaces, start = 0):
+                        try:
+                            if(index):
+                                add = self.getOwnLinkLocal(int)
+                                break
+                        except:
+                            continue
+                    self.interface = int
                 interface_index = socket.if_nametoindex(self.interface)
                 # Unirse al grupo multicast
                 group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
@@ -49,10 +56,10 @@ class server():
                 self.unicast_connections = {}
                 self.askForFiles = True
                 self.count = True
-            # except Exception as e:
-            #     print("Error: ")
-            #     print(e)
-            #     exit(-1)
+            except Exception as e:
+                print("Error: ")
+                print(e)
+                exit(-1)
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
@@ -104,6 +111,8 @@ class server():
     def getOwnLinkLocal(self, interface):
         find_ip = subprocess.Popen('ip addr show ' + interface + ' | grep "\<inet6\>" | awk \'{ print $2 }\' | awk \'{ print $1 }\'', shell=True, stdout=subprocess.PIPE)
         link_local = str(find_ip.communicate()[0].decode('utf-8')).split('/')[0]
+        if link_local == '':
+            raise ValueError("No IPv6 address for that interface ")
         return link_local
 
     def compareIp(self, address):
@@ -465,11 +474,11 @@ class server():
 
 
 parser = argparse.ArgumentParser(prog='serialserver', usage='%(prog)s [options]',description='Script to receive changes in directory to a multicast group.')
-parser.add_argument('-g','--group', required =True, dest='group_name',type=str, help='Group to connect in')
-parser.add_argument('-n','--name', required =True, dest='username',type=str, help='User name')
-parser.add_argument('-i','--interface', required =True, dest='interface',type=str, help='Interface to use')
-parser.add_argument('-d','--directory', required =True, dest='directory',type=str, help='Directory to share')
+parser.add_argument('-g','--group', required = True, dest='group_name',type=str, help='Group to connect in')
+parser.add_argument('-n','--name', required = True, dest='username',type=str, help='User name')
+parser.add_argument('-i','--interface', required = False, default = None, dest='interface',type=str, help='Interface to use')
+parser.add_argument('-d','--directory', required = True, dest='directory',type=str, help='Directory to share')
 
 args = parser.parse_args()
-serv = server(args.group_name, args.username, args.interface, args.directory)
+serv = server(group_name = args.group_name, username = args.username, interface =args.interface, dirc =  args.directory)
 serv.run()
