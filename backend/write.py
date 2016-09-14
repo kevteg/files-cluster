@@ -24,6 +24,8 @@ class server():
         self.username = username
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
+
+
         if group is not None:
             try:
                 if directory.getFilesAtDirectory(self.directory) is None:
@@ -56,6 +58,7 @@ class server():
                 self.unicast_connections = {}
                 self.askForFiles = True
                 self.count = True
+                self.addInformationFile(group_name, self.username, self.interface, self.directory)
             except Exception as e:
                 print("Error: ")
                 print(e)
@@ -63,6 +66,20 @@ class server():
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
+
+    def addInformationFile(self, group_name, username, interface, directory):
+        info = directory + ',' + group_name + ',' + username + ',' + interface
+        user = subprocess.Popen('echo $USER', shell=True, stdout=subprocess.PIPE)
+        add = True
+        try:
+            with open("/home/" + user.communicate()[0].decode('utf-8').replace("\n", "") + "/.files-cluster", "r") as f:
+                for line in f.readlines():
+                    if info == line.replace("\n", ""):
+                        add = False
+        except:
+            pass
+        if add:
+            subprocess.Popen('echo \'' + info + '\' >> /home/$USER/.files-cluster', shell=True, stdout=subprocess.PIPE)
 
     def getConnectionInfo(self, group_name):
         ip = None
