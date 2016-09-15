@@ -452,7 +452,7 @@ class server():
                     if _file[0] in current_files_names:
                         for file in current_files:
                             if file[0] == _file[0]:
-                                if file[1] != _file[0] and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
+                                if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
                                     petition.append(_file)
                                     break
                     else:
