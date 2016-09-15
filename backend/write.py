@@ -212,12 +212,11 @@ class server():
                         except:
                             pass
                         if not close:
-                            try:
-                                while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                                    l = l[:-1]
-                            except Exception as e:
-                                print(e)
-                                print("SI FALLO")
+                            # try:
+                            #     while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
+                            #         l = l[:-1]
+                            # except Exception as e:
+                            #     pass
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
                     server.setReceiving(False)
@@ -287,13 +286,11 @@ class server():
                         except:
                             pass
                         if not close:
-                            try:
-
-                                while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                                    l = l[:-1]
-                            except Exception as e:
-                                print(e)
-                                print("SI FALLO")
+                            # try:
+                            #     while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
+                            #         l = l[:-1]
+                            # except Exception as e:
+                            #     pass
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
@@ -337,7 +334,6 @@ class server():
                         self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
                     else:
                         print("Already connected to " + args[2])
-
             else: #el mensaje llego desde unicast
                 if args[1] is not None and args[1].getUsername() == "":
                     print("Changing client name to: " + args[2])
@@ -462,7 +458,9 @@ class server():
                     if _file[0] in current_files_names:
                         for file in current_files:
                             if file[0] == _file[0]:
+                                print("Mismo nombre: " + file[0])
                                 if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
+                                    print("Diferente peso y fecha mayor agregando")
                                     petition.append(_file)
                                     break
                     else:
