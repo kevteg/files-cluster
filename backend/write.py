@@ -221,11 +221,11 @@ class server():
                         except:
                             pass
                         if not close:
-                            # try:
-                            #     while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                            #         l = l[:-1]
-                            # except Exception as e:
-                            #     pass
+                            try:
+                                while l.endswith(0):
+                                    l = l[:-1]
+                            except Exception as e:
+                                pass
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
                     server.setReceiving(False)
@@ -295,11 +295,12 @@ class server():
                         except:
                             pass
                         if not close:
-                            # try:
-                            #     while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                            #         l = l[:-1]
-                            # except Exception as e:
-                            #     pass
+                            # while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
+                            try:
+                                while l.endswith(0):
+                                    l = l[:-1]
+                            except Exception as e:
+                                pass
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
