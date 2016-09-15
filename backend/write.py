@@ -213,9 +213,10 @@ class server():
                             pass
                         if not close:
                             try:
-                                while l.endswith('\x00'):
+                                while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
                                     l = l[:-1]
                             except Exception as e:
+                                print(e)
                                 print("SI FALLO")
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
@@ -287,9 +288,11 @@ class server():
                             pass
                         if not close:
                             try:
-                                while l.endswith('\x00'):
+
+                                while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
                                     l = l[:-1]
                             except Exception as e:
+                                print(e)
                                 print("SI FALLO")
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
@@ -392,11 +395,9 @@ class server():
                     print("Sending..")
                     while(l):
                         _size = len(l)
-                        # print(_size)
                         if _size < 1024:
                             _s = int(1024 - _size)
                             l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
-                        # print(l)
                         if is_server:
                             self.sendToClient(args[1], l, is_byte = True)
                         else:
