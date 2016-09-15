@@ -1,11 +1,12 @@
 import fileinput
 import os
+import time
 
 def getFilesObjects(directory, files = None, binary = True):
     all_files = []
     # print("needed_files: ")
     # print(files_name)
-    files = getFilesAtDirectory(directory, files, add_path = True, size = False)
+    files = getFilesAtDirectory(directory, files, add_path = True, extra = False)
     # print(files)
     try:
         for file_name in files:
@@ -15,21 +16,28 @@ def getFilesObjects(directory, files = None, binary = True):
 
     return all_files
 
-def getFilesAtDirectory(directory, needed_files = None, add_path = False, size = True):
+def getFilesAtDirectory(directory, needed_files = None, add_path = False, extra = True):
     #retorna none si no existe el directorio y [] si está vacio
     try:
         results = []
         if needed_files:
              needed_files = [l[0] for l in needed_files]
+        # ahora = time.ctime(time.time() - 3600)
         for (dirpath, dirnames, filenames) in os.walk(directory):
+            # for nfile in filenames:
+            #     print(time.ctime(os.path.getmtime((dirpath + '/') + nfile)))
+            #     if ahora > time.ctime(os.path.getmtime((dirpath + '/') + nfile)):
+            #         print("yes")
+            #     else:
+            #         print("no")
             if needed_files:
-                if size:
-                    results.extend(((((dirpath + '/') if add_path else '') + nfile) if nfile in needed_files else '', os.path.getsize((dirpath + '/') + nfile) if nfile in needed_files else '') for nfile, nfile in zip(filenames, filenames))
+                if extra:
+                    results.extend(((((((dirpath + '/') if add_path else '') + nfile) if nfile in needed_files else ''), (os.path.getsize((dirpath + '/') + nfile) if nfile in needed_files else '')), time.ctime(os.path.getmtime((dirpath + '/') + nfile))) for nfile, nfile, nfile in zip(filenames, filenames, filenames))
                 else:
                     results.extend((((dirpath + '/') if add_path else '') + nfile)  if nfile in needed_files else '' for nfile in filenames)
             else:
-                if size:
-                    results.extend(((((dirpath + '/') if add_path else '') + nfile), os.path.getsize((dirpath + '/') + nfile)) for nfile, nfile in zip(filenames, filenames))
+                if extra:
+                    results.extend(((((dirpath + '/') if add_path else '') + nfile), os.path.getsize((dirpath + '/') + nfile), time.ctime(os.path.getmtime((dirpath + '/') + nfile))) for nfile, nfile, nfile in zip(filenames, filenames, filenames))
                 else:
                     results.extend((((dirpath + '/') if add_path else '') + nfile) for nfile in filenames)
             break

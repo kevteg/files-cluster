@@ -11,6 +11,9 @@ import subprocess
 import sys
 from unicast_obj import uniObj
 import directory
+import gi
+gi.require_version('Notify', '0.7')
+from gi.repository import Notify, GLib
 # import ipaddress
 '''
     Author: Keeeevin
@@ -24,7 +27,7 @@ class server():
         self.username = username
         self.time_to_send_list_of_files = 5#cada N segundos enviar lista de archivos en directorio
         self.send_list_of_files = False
-
+        self.separator = '|'
 
         if group is not None:
             try:
@@ -66,6 +69,21 @@ class server():
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
+
+    def hello(self, notification, action_name, data):
+        print("hello")
+
+    def test(self):
+        Notify.init("Hello there")
+        Hello=Notify.Notification.new("Hello", "Do you want to delete this file xxx?.", "dialog-question")
+        Hello.add_action(
+            "action_click",
+            "Reply to Message",
+            self.hello,
+            None
+        )
+        Hello.show()
+        GLib.MainLoop().run()
 
     def addInformationFile(self, group_name, username, interface, directory):
         info = directory + ',' + group_name + ',' + username + ',' + interface
@@ -112,6 +130,9 @@ class server():
             self.tcp_thread = threading.Thread( name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
             self.multicast_thread_sender = threading.Thread( name='multicast_sender', target=self.multicast_sender)
             self.time_check = threading.Thread( name='time_check', target=self.time_checker)
+            # self.test = threading.Thread( name='test', target=self.test)
+            # self.test.start()
+            # self.test.join(1)
             self.time_check.start()
             self.time_check.join(1)
             self.multicast_thread.start()
@@ -170,7 +191,7 @@ class server():
                 data = server.getSocket().recv(1024).decode().rstrip('\0').lstrip('\0') if not server.getReceiving() else server.getSocket().recv(1024)
                 if not server.getReceiving():
                     print ('Received from ' + server.getUsername() + ':', repr(data))
-                    information = data.split(':')
+                    information = data.split(self.separator)
                     try:
                         send, message = self.typeOfMessage(information[0], [True, server, information[1]])
                     except:
@@ -187,7 +208,7 @@ class server():
                     print("receiving as client")
                     while(l and not close):
                         try:
-                            close = True if (l.decode().rstrip('\0').lstrip('\0').split(":")[0] == "done") else False
+                            close = True if (l.decode().rstrip('\0').lstrip('\0').split(self.separator)[0] == "done") else False
                         except:
                             pass
                         if not close:
@@ -239,7 +260,7 @@ class server():
                 data = client.getSocket().recv(1024).decode().rstrip('\0').lstrip('\0') if not client.getReceiving() else client.getSocket().recv(1024)
                 if not client.getReceiving():
                     print("Receive from " + (client.getUsername() if client.getUsername() != "" else "client")+ ": ", repr(data))
-                    information = data.split(':')
+                    information = data.split(self.separator)
                     try:
                         send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
                     except:
@@ -256,7 +277,7 @@ class server():
                     print("receiving as server")
                     while(l and not close):
                         try:
-                            close = True if (l.decode().lstrip('\0').rstrip('\0').split(":")[0] == "done") else False
+                            close = True if (l.decode().lstrip('\0').rstrip('\0').split(self.separator)[0] == "done") else False
                         except:
                             pass
                         if not close:
@@ -353,10 +374,10 @@ class server():
             # print("Sendddding: " + args[2])
             # print("Directory: " + self.directory)
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
-            names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, size = False)
+            names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = False)
             try:
                 for index, _file in enumerate(files, start = 0):
-                    self.sendToClient(args[1], "send: " + str(names[index]))
+                    self.sendToClient(args[1], "send" +self.separator + str(names[index]))
                     time.sleep(0.5)
                     l = _file.read(1024)
                     print("Sending..")
@@ -373,11 +394,11 @@ class server():
                             self.sendToServer(args[1], l, is_byte = True)
                         l = _file.read(1024)
                     if is_server:
-                        self.sendToClient(args[1], "done: " + str(names[index]))
-                        self.sendToClient(args[1], "done: sending")
+                        self.sendToClient(args[1], "done" + self.separator + str(names[index]))
+                        self.sendToClient(args[1], "done" + self.separator +"sending")
                     else:
-                        self.sendToServer(args[1], "done: " + str(names[index]))
-                        self.sendToServer(args[1], "done: sending")
+                        self.sendToServer(args[1], "done" + self.separator + str(names[index]))
+                        self.sendToServer(args[1], "done" + self.separator +"sending")
             except Exception as e:
                 print("Error sending file")
                 print(e)
@@ -397,7 +418,7 @@ class server():
             self.count = True
 
     def sendUserName(self, args):
-        return 'connection: ' + self.username
+        return 'connection' + self.separator + self.username
 
     def typeOfMessage(self, type, args = None):
         #retorna si va a responder y el mensaje que enviara si es que lo va a mandar
@@ -422,9 +443,18 @@ class server():
             else:
                 print("Check if I have those files")
                 current_files = directory.getFilesAtDirectory(self.directory)
+                current_files_names = [file[0] for file in current_files]
+                current_files_size = [file[1] for file in current_files]
+                current_files_date = [file[2] for file in current_files]
                 petition = []
+
                 for _file in user_files:
-                    if _file not in current_files:
+                    if _file[0] in current_files_names:
+                        for file in current_files:
+                            if file[0] == _file[0] and file[1] != _file[0] and file[2] < _file[2]:
+                                petition.append(_file)
+                                break
+                    else:
                         petition.append(_file)
 
                 if petition != []:
@@ -433,9 +463,9 @@ class server():
                     is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
                     if unicastObject:
                         if is_server:
-                            self.sendToClient(unicastObject, "need: " + str(petition))
+                            self.sendToClient(unicastObject, "need" + self.separator + str(petition))
                         else:
-                            self.sendToServer(unicastObject, "need: " + str(petition))
+                            self.sendToServer(unicastObject, "need" + self.separator + str(petition))
                     else:
                         print("Not connected to that host yet")
 
@@ -455,10 +485,13 @@ class server():
                 data, sender = self.multicast_sock.recvfrom(1500)
                 while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
                 print (str(sender) + ' ' + repr(data))
-                information = data.decode('utf-8').split(':')
-                send, message = self.typeOfMessage(information[0], [False, sender, information[1]])
-                if send:
-                    self.sendToGroup(message)
+                information = data.decode('utf-8').split(self.separator)
+                try:
+                    send, message = self.typeOfMessage(information[0], [False, sender, information[1]])
+                    if send:
+                        self.sendToGroup(message)
+                except:
+                    print("Error with received data")
         except (KeyboardInterrupt, SystemExit):
             self.multicast_sock.close()
             self.dowork = False
@@ -484,7 +517,7 @@ class server():
                     self.send_list_of_files = False
                     send, message = self.typeOfMessage('list', self.directory)
                     if send:
-                        self.sendToGroup("files: " + str(message))
+                        self.sendToGroup("files" + self.separator + str(message))
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
 
