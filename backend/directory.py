@@ -22,14 +22,7 @@ def getFilesAtDirectory(directory, needed_files = None, add_path = False, extra 
         results = []
         if needed_files:
              needed_files = [l[0] for l in needed_files]
-        # ahora = time.ctime(time.time() - 3600)
         for (dirpath, dirnames, filenames) in os.walk(directory):
-            # for nfile in filenames:
-            #     print(time.ctime(os.path.getmtime((dirpath + '/') + nfile)))
-            #     if ahora > time.ctime(os.path.getmtime((dirpath + '/') + nfile)):
-            #         print("yes")
-            #     else:
-            #         print("no")
             if needed_files:
                 if extra:
                     results.extend(((((((dirpath + '/') if add_path else '') + nfile) if nfile in needed_files else ''), (os.path.getsize((dirpath + '/') + nfile) if nfile in needed_files else '')), time.ctime(os.path.getmtime((dirpath + '/') + nfile))) for nfile, nfile, nfile in zip(filenames, filenames, filenames))

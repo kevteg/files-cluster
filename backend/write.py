@@ -303,7 +303,6 @@ class server():
                     #         send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
                     # except Exception as e:
                     #     print(e)
-                    print("no recibo mas de este archivo")
                     self.tmp.close()
         except Exception as e:
             print(e)
@@ -385,8 +384,7 @@ class server():
             names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = False)
             try:
                 for index, _file in enumerate(files, start = 0):
-                    self.sendToClient(args[1], "send" +self.separator + str(names[index]))
-                    time.sleep(0.5)
+                    self.sendToClient(args[1], "send" + self.separator + str(names[index]))
                     l = _file.read(1024)
                     print("Sending..")
                     while(l):
@@ -458,7 +456,6 @@ class server():
                     if _file[0] in current_files_names:
                         for file in current_files:
                             if file[0] == _file[0]:
-                                print("Mismo nombre: " + file[0])
                                 if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
                                     print("Diferente peso y fecha mayor agregando")
                                     petition.append(_file)
