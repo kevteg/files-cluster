@@ -458,7 +458,7 @@ class server():
                                 if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
                                     petition.append(_file)
                                     break
-                    else if _file[0] not in self.self_obj.getNotAskFor():
+                    elif _file[0] not in self.self_obj.getNotAskFor():
                         petition.append(_file)
 
                 if petition != []:
