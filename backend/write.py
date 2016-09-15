@@ -212,8 +212,11 @@ class server():
                         except:
                             pass
                         if not close:
-                            while l.endswith('\x00'):
-                                l = l[:-1]
+                            try:
+                                while l.endswith('\x00'):
+                                    l = l[:-1]
+                            except Exception as e:
+                                print("SI FALLO")
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
                     server.setReceiving(False)
@@ -283,8 +286,11 @@ class server():
                         except:
                             pass
                         if not close:
-                            while l.endswith('\x00'):
-                                l = l[:-1]
+                            try:
+                                while l.endswith('\x00'):
+                                    l = l[:-1]
+                            except Exception as e:
+                                print("SI FALLO")
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
