@@ -35,5 +35,8 @@ class uniObj():
             self.not_ask_for = self.not_ask_for + list(set(self.file_list) - set(new_list))
             self.file_list = new_list
 
+    def resetNotAskFor(self):
+        self.not_ask_for = []
+        
     def getNotAskFor(self):
         return self.not_ask_for

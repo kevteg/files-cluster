@@ -71,19 +71,30 @@ class server():
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
 
-    def hello(self, notification, action_name, data):
-        print("hello")
-
-    def test(self):
-        Notify.init("Hello there")
-        Hello=Notify.Notification.new("Hello", "Do you want to delete this file xxx?.", "dialog-question")
-        Hello.add_action(
+    def delete(self, message, files):
+        Notify.init("File notification")
+        file_change=Notify.Notification.new("Hello", message, "dialog-question")
+        file_change.add_action(
             "action_click",
-            "Reply to Message",
-            self.hello,
-            None
+            "Yes, please",
+            self.acceptMessage,
+            files
         )
-        Hello.show()
+        file_change.show()
+        GLib.MainLoop().run()
+
+    def acceptMessage(self, notification, action_name, files):
+        print("Gonna delete these files:")
+        for f in files:
+            try:
+                print("Deleting: " + f)
+                os.remove(self.directory + "/" + f)
+                print("Done")
+            except:
+                pass
+
+    def notification(self):
+        Notify.init("File notification")
         GLib.MainLoop().run()
 
     def addInformationFile(self, group_name, username, interface, directory):
@@ -131,9 +142,6 @@ class server():
             self.tcp_thread = threading.Thread( name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
             self.multicast_thread_sender = threading.Thread( name='multicast_sender', target=self.multicast_sender)
             self.time_check = threading.Thread( name='time_check', target=self.time_checker)
-            # self.test = threading.Thread( name='test', target=self.test)
-            # self.test.start()
-            # self.test.join(1)
             self.time_check.start()
             self.time_check.join(1)
             self.multicast_thread.start()
@@ -453,13 +461,15 @@ class server():
                     is_server, partner_connection = self.findUnicastObject(address = address_to_connect, interface = interface)
                     if partner_connection:
                         partner_connection.setFileList(user_files)
-                        print("Files the user deleted:")
-                        print(partner_connection.getNotAskFor())
-                        print("FILES I WILL DELETE:")
                         files_to_delete = [mfile for mfile in current_files_names if mfile in partner_connection.getNotAskFor()]
-                        # files_to_delete = filter(None, files_to_delete)
+
+                        if files_to_delete != []:
+                            message_to_user = "The user: " + partner_connection.getUsername() + " deleted: " + ", ".join(files_to_delete) + "\n Do you want to delete them too?"
+                            notification = threading.Thread( name='notification', target=self.delete, args = [message_to_user, files_to_delete])
+                            notification.start()
+                            notification.join(1)
+
                         self.self_obj.setFileList(current_files)
-                        print(files_to_delete)
                         for _file in user_files:
                             if _file[0] in current_files_names:
                                 for file in current_files:
@@ -469,6 +479,7 @@ class server():
                                             break
                             elif _file[0] not in self.self_obj.getNotAskFor():
                                 petition.append(_file)
+                        partner_connection.resetNotAskFor()
                     else:
                         print("Not connected to that host yet")
                 except Exception as e:

@@ -36,11 +36,8 @@ def getFilesAtDirectory(directory, needed_files = None, add_path = False, extra 
             break
         else:
             results = None
-        # print("resultados: ")
-        # print(results)
         if needed_files:
             results = list(filter(('').__ne__, results))
-        # print(results)
     except Exception as e:
         print(e)
         results = []
