@@ -2,7 +2,7 @@
   "name":"miventana",
   "main":"index.html",
   "window":{
-    "width":600,
+    "width":1000,
     "height":600,
     "frame":false,
     "transparent": true
