@@ -222,7 +222,7 @@ class server():
                             pass
                         if not close:
                             try:
-                                while l.endswith(0):
+                                while l.endswith(b'\x00'):
                                     l = l[:-1]
                             except Exception as e:
                                 pass
@@ -297,7 +297,7 @@ class server():
                         if not close:
                             # while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
                             try:
-                                while l.endswith(0):
+                                while l.endswith(b'\x00'):
                                     l = l[:-1]
                             except Exception as e:
                                 pass
