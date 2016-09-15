@@ -439,42 +439,41 @@ class server():
         return methods[0], methods[1](args)
 
     def checkFiles(self, args):
-        # test_directory = "/tmp/empty2"
         if args and self.askForFiles:
             address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
             user_files = eval(args[2])
             if not(connect):
                 print("I sent that UDP message!")
-            else:
+            elif user_files != []:
                 print("Check if I have those files")
+                petition = []
                 current_files = directory.getFilesAtDirectory(self.directory)
                 current_files_names = [file[0] for file in current_files]
-                petition = []
-
-                for _file in user_files:
-                    if _file[0] in current_files_names:
-                        for file in current_files:
-                            if file[0] == _file[0]:
-                                if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
-                                    petition.append(_file)
-                                    break
-                    elif _file[0] not in self.self_obj.getNotAskFor():
-                        print("not to ask files:")
-                        print(self.self_obj.getNotAskFor())
-                        print(_file[0])
-                        petition.append(_file)
+                is_server, partner_connection = self.findUnicastObject(address = address_to_connect, interface = interface)
+                if partner_connection:
+                    partner_connection.setFileList(user_files)
+                    print("Files the user deleted:")
+                    print(partner_connection.getNotAskFor())
+                    for _file in user_files:
+                        if _file[0] in current_files_names:
+                            for file in current_files:
+                                if file[0] == _file[0]:
+                                    if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
+                                        petition.append(_file)
+                                        break
+                        elif _file[0] not in self.self_obj.getNotAskFor():
+                            petition.append(_file)
+                else:
+                    print("Not connected to that host yet")
 
                 if petition != []:
                     print("Gonna ask for: ")
                     print(petition)
-                    is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
-                    if unicastObject:
+                    if partner_connection:
                         if is_server:
-                            self.sendToClient(unicastObject, "need" + self.separator + str(petition))
+                            self.sendToClient(partner_connection, "need" + self.separator + str(petition))
                         else:
-                            self.sendToServer(unicastObject, "need" + self.separator + str(petition))
-                    else:
-                        print("Not connected to that host yet")
+                            self.sendToServer(partner_connection, "need" + self.separator + str(petition))
 
     def sendToGroup(self, message):
         print("Sending to group: " + message)
