@@ -61,6 +61,7 @@ class server():
                 self.unicast_connections = {}
                 self.askForFiles = True
                 self.count = True
+                self.self_obj = uniObj(username = username)
                 self.addInformationFile(group_name, self.username, self.interface, self.directory)
             except Exception as e:
                 print("Error: ")
@@ -448,8 +449,6 @@ class server():
                 print("Check if I have those files")
                 current_files = directory.getFilesAtDirectory(self.directory)
                 current_files_names = [file[0] for file in current_files]
-                current_files_size = [file[1] for file in current_files]
-                current_files_date = [file[2] for file in current_files]
                 petition = []
 
                 for _file in user_files:
@@ -457,10 +456,9 @@ class server():
                         for file in current_files:
                             if file[0] == _file[0]:
                                 if int(file[1]) != int(_file[1]) and time.strptime(file[2], "%a %b %d %H:%M:%S %Y") < time.strptime(_file[2], "%a %b %d %H:%M:%S %Y"):
-                                    print("Diferente peso y fecha mayor agregando")
                                     petition.append(_file)
                                     break
-                    else:
+                    else if _file[0] not in self.self_obj.getNotAskFor():
                         petition.append(_file)
 
                 if petition != []:
@@ -523,6 +521,7 @@ class server():
                     self.send_list_of_files = False
                     send, message = self.typeOfMessage('list', self.directory)
                     if send:
+                        self.self_obj.setFileList(str(message))
                         self.sendToGroup("files" + self.separator + str(message))
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False

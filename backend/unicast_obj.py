@@ -1,10 +1,12 @@
 import socket
 class uniObj():
-    def __init__(self, socket, username = "", address = ""):
+    def __init__(self, socket = None, username = "", address = ""):
         self.username = username
         self.socket = socket
         self.address = address
         self.receiving = False
+        self.file_list = []
+        self.not_ask_for = []
 
     def setUsername(self, username):
         self.username = username
@@ -26,3 +28,13 @@ class uniObj():
 
     def getSocket(self):
         return self.socket
+
+    def setFileList(self, new_list):
+        # print(new_list)
+        new_list = [element[0] for element in eval(new_list)]
+        if new_list != self.file_list:
+            self.not_ask_for = self.not_ask_for + list(set(self.file_list) - set(new_list))
+            self.file_list = new_list
+
+    def getNotAskFor(self):
+        return self.not_ask_for
