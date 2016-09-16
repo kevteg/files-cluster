@@ -13,7 +13,7 @@
         <nav id="slide-menu">
         	<ul>
         		<li class="new"><i class="fa fa-plus"></i>Nuevo Directorio</li>
-        		<li class="delete"><i class="fa fa-trash"></i>Eliminar Directorio</li>
+        		<li class="delete"><button onclick="eliminar()" type="button" ><i class="fa fa-trash"></i>Eliminar Directorio</button></li>
         		<li class="sync"><i class="fa fa-refresh"></i>Sincronizar</li>
         		<li class="settings"><i class="fa fa-cogs"></i>Configuración</li>
         		<!--<li class="logout">Logout</li>-->
@@ -36,7 +36,7 @@
         <section class="main-panel">
           <div id="directorys">
             <h3>Administración</h3>
-            
+
           </div>
           <div id="newModal" class="modal fade" role="dialog">
             <div class="modal-dialog">
@@ -67,9 +67,7 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h3 class="modal-title">Eliminar Directorio</h3>
               </div>
-              <div class="modal-body">
-                <button type="button" class="btn" data-dismiss="modal">Nombre del directorio 1</button>
-                <button type="button" class="btn" data-dismiss="modal">Nombre del directorio 2</button>
+              <div class="modal-body" id="eliminar">
               </div>
               <div class="modal-footer text-left">
                 <p>Haz click en el directorio que deseas eliminar</p>
