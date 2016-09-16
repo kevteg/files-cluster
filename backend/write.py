@@ -214,7 +214,7 @@ class server():
                 else:
                     l = data
                     close = False
-                    counter = 1
+                    # counter = 1
                     print("receiving as client")
                     while(l and not close):
                         try:
@@ -222,12 +222,12 @@ class server():
                         except:
                             pass
                         if not close:
-                            if counter >= self.portion:
-                                try:
-                                    while l.endswith(b'\x00'):
-                                        l = l[:-1]
-                                except Exception as e:
-                                    pass
+                            # if counter >= self.portion:
+                            #     try:
+                            #         while l.endswith(b'\x00'):
+                            #             l = l[:-1]
+                            #     except Exception as e:
+                            #         pass
                             self.tmp.write(l)
                             l = server.getSocket().recv(1024)
                     server.setReceiving(False)
@@ -291,7 +291,7 @@ class server():
                     l = data
                     close = False
                     print("receiving as server")
-                    counter = 1
+                    # counter = 1
                     while(l and not close):
                         try:
                             close = True if (l.decode().lstrip('\0').rstrip('\0').split(self.separator)[0] == "done") else False
@@ -299,12 +299,12 @@ class server():
                             pass
                         if not close:
                             # while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                            if counter >= self.portion:
-                                try:
-                                    while l.endswith(b'\x00'):
-                                        l = l[:-1]
-                                except Exception as e:
-                                    pass
+                            # if counter >= self.portion:
+                            #     try:
+                            #         while l.endswith(b'\x00'):
+                            #             l = l[:-1]
+                            #     except Exception as e:
+                            #         pass
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
@@ -395,7 +395,7 @@ class server():
             # print("Sendddding: " + args[2])
             # print("Directory: " + self.directory)
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
-            names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = True)
+            names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = False)
             try:
                 for index, _file in enumerate(files, start = 0):
                     self.sendToClient(args[1], "send" + self.separator + str(names[index]))
@@ -425,9 +425,9 @@ class server():
         if args[0]:
             self.askForFiles = False
             self.count = False
-            size_of_comming_file = eval(args[2])[1]
-            self.portion = size_of_comming_file/1024
-            self.tmp = open(self.directory + "/" + str(eval(args[2])[0]).strip(), "wb")
+            # size_of_comming_file = eval(args[2])[1]
+            # self.portion = size_of_comming_file/1024
+            self.tmp = open(self.directory + "/" + str(args[2]).strip(), "wb")
             args[1].setReceiving(True)
 
     def doneReceiving(self, args):
