@@ -30,8 +30,7 @@ class uniObj():
         return self.socket
 
     def setFileList(self, new_list):
-        # print(new_list)
-        new_list = [element[0] for element in eval(new_list)]
+        new_list = [element[0] for element in new_list]
         if new_list != self.file_list:
             self.not_ask_for = self.not_ask_for + list(set(self.file_list) - set(new_list))
             self.file_list = new_list
