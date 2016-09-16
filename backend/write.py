@@ -444,7 +444,7 @@ class server():
             user_files = eval(args[2])
             if not(connect):
                 print("I sent that UDP message!")
-            elif:
+            else:
                 print("Check if I have those files")
                 try:
                     petition = []
