@@ -456,7 +456,7 @@ class server():
                         print("Files the user deleted:")
                         print(partner_connection.getNotAskFor())
                         print("FILES I WILL DELETE:")
-                        print(list(set(current_files_names) - set(partner_connection.getNotAskFor())))
+                        print(list(set(partner_connection.getNotAskFor()) - set(current_files_names)))
                         for _file in user_files:
                             if _file[0] in current_files_names:
                                 for file in current_files:
