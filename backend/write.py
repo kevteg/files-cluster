@@ -62,6 +62,7 @@ class server():
                 self.askForFiles = True
                 self.count = True
                 self.self_obj = uniObj(username = username)
+                self.is_sending = False #Está mandando un archivo
                 self.addInformationFile(group_name, self.username, self.interface, self.directory)
             except Exception as e:
                 print("Error: ")
@@ -419,7 +420,7 @@ class server():
                         else:
                             self.sendToServer(args[1], "done" + self.separator + str(names[index]))
                             self.sendToServer(args[1], "done" + self.separator +"sending")
-                    self.is_sending = False    
+                    self.is_sending = False
             except Exception as e:
                 print("Error sending file")
                 print(e)
