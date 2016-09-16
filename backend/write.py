@@ -397,26 +397,29 @@ class server():
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
             names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = False)
             try:
-                for index, _file in enumerate(files, start = 0):
-                    self.sendToClient(args[1], "send" + self.separator + str(names[index]))
-                    l = _file.read(1024)
-                    print("Sending..")
-                    while(l):
-                        _size = len(l)
-                        if _size < 1024:
-                            _s = int(1024 - _size)
-                            l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
-                        if is_server:
-                            self.sendToClient(args[1], l, is_byte = True)
-                        else:
-                            self.sendToServer(args[1], l, is_byte = True)
+                if not self.is_sending:
+                    self.is_sending = True
+                    for index, _file in enumerate(files, start = 0):
+                        self.sendToClient(args[1], "send" + self.separator + str(names[index]))
                         l = _file.read(1024)
-                    if is_server:
-                        self.sendToClient(args[1], "done" + self.separator + str(names[index]))
-                        self.sendToClient(args[1], "done" + self.separator +"sending")
-                    else:
-                        self.sendToServer(args[1], "done" + self.separator + str(names[index]))
-                        self.sendToServer(args[1], "done" + self.separator +"sending")
+                        print("Sending..")
+                        while(l):
+                            _size = len(l)
+                            if _size < 1024:
+                                _s = int(1024 - _size)
+                                l = l + (struct.pack(str(_s) + 'B',*([0]*_s)))
+                            if is_server:
+                                self.sendToClient(args[1], l, is_byte = True)
+                            else:
+                                self.sendToServer(args[1], l, is_byte = True)
+                            l = _file.read(1024)
+                        if is_server:
+                            self.sendToClient(args[1], "done" + self.separator + str(names[index]))
+                            self.sendToClient(args[1], "done" + self.separator +"sending")
+                        else:
+                            self.sendToServer(args[1], "done" + self.separator + str(names[index]))
+                            self.sendToServer(args[1], "done" + self.separator +"sending")
+                    self.is_sending = False    
             except Exception as e:
                 print("Error sending file")
                 print(e)
