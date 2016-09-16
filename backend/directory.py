@@ -25,7 +25,7 @@ def getFilesAtDirectory(directory, needed_files = None, add_path = False, extra 
         for (dirpath, dirnames, filenames) in os.walk(directory):
             if needed_files:
                 if extra:
-                    results.extend(((((((dirpath + '/') if add_path else '') + nfile) if nfile in needed_files else ''), (os.path.getsize((dirpath + '/') + nfile) if nfile in needed_files else '')), time.ctime(os.path.getmtime((dirpath + '/') + nfile))) for nfile, nfile, nfile in zip(filenames, filenames, filenames))
+                    results.extend((((((dirpath + '/') if add_path else '') + nfile) if nfile in needed_files else ''), (os.path.getsize((dirpath + '/') + nfile) if nfile in needed_files else ''), (time.ctime(os.path.getmtime((dirpath + '/') + nfile))  if nfile in needed_files else '')) for nfile, nfile, nfile in zip(filenames, filenames, filenames))
                 else:
                     results.extend((((dirpath + '/') if add_path else '') + nfile)  if nfile in needed_files else '' for nfile in filenames)
             else:
