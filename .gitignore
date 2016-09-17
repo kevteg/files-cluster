@@ -1,0 +1,8 @@
+*
+!frontend/
+!frontend/app
+!frontend/app/*
+!backend
+!backend/*
+!/frontend/Linux.sh
+!/frontend/Windows.bat
