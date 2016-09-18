@@ -65,8 +65,8 @@ class server():
                 self.is_sending = False #Está mandando un archivo
                 self.addInformationFile(group_name, self.username, self.interface, self.directory)
             except Exception as e:
-                print("Error: ")
-                print(e)
+                print("Error: ", file=sys.stderr)
+                print(e, file=sys.stderr)
                 exit(-1)
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
@@ -187,7 +187,7 @@ class server():
             self.unicast_connected_to[new_server].start()
             # self.unicast_connected_to[new_server].join(1)
         except Exception as e:
-            print(e)
+            print(e, file=sys.stderr)
             print("User " + name + " seems to not be listening :(")
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es cliente
@@ -474,7 +474,7 @@ class server():
                         files_to_delete = [mfile for mfile in current_files_names if mfile in partner_connection.getNotAskFor()]
 
                         if files_to_delete != []:
-                            message_to_user = "The user: " + partner_connection.getUsername() + " deleted: " + ", ".join(files_to_delete) + "\n Do you want to delete them too?"
+                            message_to_user = "El usuario: " + partner_connection.getUsername() + " borro: " + ", ".join(files_to_delete) + "\n ¿Quieres borrarlo también?"
                             notification = threading.Thread( name='notification', target=self.delete, args = [message_to_user, files_to_delete])
                             notification.start()
                             notification.join(1)

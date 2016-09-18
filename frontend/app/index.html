@@ -14,9 +14,8 @@
         	<ul>
         		<li class="new"><i class="fa fa-plus"></i>Nuevo Directorio</li>
         		<li class="delete"><button onclick="eliminar()" type="button" ><i class="fa fa-trash"></i>Eliminar Directorio</button></li>
-        		<li class="sync"><i class="fa fa-refresh"></i>Sincronizar</li>
         		<li class="settings"><i class="fa fa-cogs"></i>Configuración</li>
-        		<!--<li class="logout">Logout</li>-->
+            <li class="delete"><button onclick="close_all()" type="button" ><i class="fa fa-sign-out"></i>Cerrar todo</button></li>
         	</ul>
         </nav>
     </head>
@@ -26,7 +25,7 @@
           <div class="close"><a href="javascript:close()">&nbsp;&nbsp;&nbsp;</a></div>
           <div class="minimize"><a href="javascript:minimize()">&nbsp;&nbsp;&nbsp;</a></div>
           <div class="zoom"><a href="javascript:maximize()">&nbsp;&nbsp;&nbsp;</a></div>
-          <div class="drag">&nbsp;</div>
+          <div class="drag"><p>Files cluster</p></div>
         </div>
       </div>
       <!-- Content panel -->
@@ -50,6 +49,10 @@
                 <div class="modal-body">
                   <p>Nombre del directorio</p>
                   <input id="add_direc" type="text" placeholder="Nombre"></input>
+                  <p>Nombre del grupo</p>
+                  <input id="add_grupo" type="text" placeholder="Grupo"></input>
+                  <p>Nombre de usuario</p>
+                  <input id="add_user" type="text" placeholder="Usuario"></input>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal" onclick="add_direc()">Crear</button>
