@@ -51,6 +51,7 @@ class server():
                             continue
                     self.interface = int
                 interface_index = socket.if_nametoindex(self.interface)
+                Notify.init("File notification")
                 # Unirse al grupo multicast
                 group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
                 mreq = struct.pack('@I', interface_index)
@@ -73,16 +74,19 @@ class server():
             exit(-1)
 
     def delete(self, message, files):
-        Notify.init("File notification")
+
         file_change=Notify.Notification.new("Hello", message, "dialog-question")
         file_change.add_action(
             "action_click",
-            "Yes, please",
+            "¡Si!",
             self.acceptMessage,
             files
         )
         file_change.show()
-        GLib.MainLoop().run()
+        try:
+            GLib.MainLoop().run()
+        except:
+            return True
 
     def acceptMessage(self, notification, action_name, files):
         print("Gonna delete these files:")
@@ -93,10 +97,6 @@ class server():
                 print("Done")
             except:
                 pass
-
-    def notification(self):
-        Notify.init("File notification")
-        GLib.MainLoop().run()
 
     def addInformationFile(self, group_name, username, interface, directory):
         info = directory + ',' + group_name + ',' + username + ',' + interface
@@ -143,6 +143,9 @@ class server():
             self.tcp_thread = threading.Thread( name='tcp_thread', target=self.waitTCPCLients, args=[self.interface])
             self.multicast_thread_sender = threading.Thread( name='multicast_sender', target=self.multicast_sender)
             self.time_check = threading.Thread( name='time_check', target=self.time_checker)
+            self.listen_to_stdin = threading.Thread( name='userInput', target=self.userInput)
+            self.listen_to_stdin.start()
+            self.listen_to_stdin.join(1)
             self.time_check.start()
             self.time_check.join(1)
             self.multicast_thread.start()
@@ -160,18 +163,16 @@ class server():
         find_ip = subprocess.Popen('ip addr show ' + interface + ' | grep "\<inet6\>" | awk \'{ print $2 }\' | awk \'{ print $1 }\'', shell=True, stdout=subprocess.PIPE)
         link_local = str(find_ip.communicate()[0].decode('utf-8')).split('/')[0]
         if link_local == '':
-            raise ValueError("No IPv6 address for that interface ")
+            raise ValueError("Error: No IPv6 address for that interface ")
         return link_local
 
     def compareIp(self, address):
-        #Compares interfaces IP with the address, True if it exists
         try:
             connect_info = address.split('%') #interface and address
             link_local = self.getOwnLinkLocal(connect_info[1])
             return connect_info[0], connect_info[1], not(link_local == connect_info[0])
         except:
             raise ValueError("Error: could not find link local address")
-
 
     #This one connects to others socket
     def connectToTCPServer(self, name, address_to_connect, interface):
@@ -556,7 +557,22 @@ class server():
                         self.sendToGroup("files" + self.separator + str(message))
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
-
+    def killEverySocket(self):
+        for uni in self.unicast_connected_to.keys():
+            uni.getSocket().close()
+        for uni in self.unicast_connections.keys():
+            uni.getSocket().close()
+    def userInput(self):
+        while self.dowork:
+            _in = input()
+            if(_in == "exit"):
+                self.dowork = False
+                self.multicast_sock.close()
+                self.tcp_socket.close()
+                self.killEverySocket()
+                GLib.MainLoop().quit()
+                print("You may close me now")
+                exit(0)
 
 
 parser = argparse.ArgumentParser(prog='serialserver', usage='%(prog)s [options]',description='Script to receive changes in directory to a multicast group.')
