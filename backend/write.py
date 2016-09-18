@@ -475,7 +475,7 @@ class server():
                         files_to_delete = [mfile for mfile in current_files_names if mfile in partner_connection.getNotAskFor()]
 
                         if files_to_delete != []:
-                            message_to_user = "El usuario: " + partner_connection.getUsername() + " borro: " + ", ".join(files_to_delete) + "\n ¿Quieres borrarlo también?"
+                            message_to_user = "El usuario: " + partner_connection.getUsername() + "(" + self.directory +  ")" + " borro: " + ", ".join(files_to_delete) + "\n ¿Quieres borrarlo también?"
                             notification = threading.Thread( name='notification', target=self.delete, args = [message_to_user, files_to_delete])
                             notification.start()
                             notification.join(1)
