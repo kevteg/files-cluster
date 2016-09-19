@@ -71,6 +71,18 @@ class server():
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
+
+    '''
+    brief: Método que muestra que el usuario se fue
+    param: message:     Mensaje a mostrar al usuario
+    '''
+    def userGone(self, message):
+        file_change=Notify.Notification.new("Hola", message, "dialog-question")
+        file_change.show()
+        try:
+            GLib.MainLoop().run()
+        except:
+            return True
     '''
     brief: Método que muestra una ventana de confirmación para borrar los archivos que otro usuario borro
     param: message:     Mensaje a mostrar al usuario
@@ -244,6 +256,7 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(server)
+                        self.userGone("El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido")
                         self.doneReceiving([True])
                         break
                     if send:
@@ -331,6 +344,7 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(client)
+                        self.userGone("El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido")
                         self.doneReceiving([True])
                         break
                     if send:
@@ -339,32 +353,15 @@ class server():
                     l = data
                     close = False
                     print("receiving as server")
-                    # counter = 1
                     while(l and not close):
                         try:
                             close = True if (l.decode().lstrip('\0').rstrip('\0').split(self.separator)[0] == "done") else False
                         except:
                             pass
                         if not close:
-                            # while l.endswith((struct.pack(str(1) + 'B',*([0]*1)))):
-                            # if counter >= self.portion:
-                            #     try:
-                            #         while l.endswith(b'\x00'):
-                            #             l = l[:-1]
-                            #     except Exception as e:
-                            #         pass
                             self.tmp.write(l)
                             l = client.getSocket().recv(1024)
                     client.setReceiving(False)
-                    # print(l)
-                    # try:
-                    #     if l:
-                    #         data = l.decode().rstrip('\0').lstrip('\0')
-                    #         print(data)
-                    #         information = data.split(':')
-                    #         send, message = self.typeOfMessage(information[0].lstrip(' ').rstrip(' '), [True, client, information[1].lstrip(' ').rstrip(' ')])
-                    # except Exception as e:
-                    #     print(e)
                     self.tmp.close()
         except Exception as e:
             print(e)
@@ -463,8 +460,6 @@ class server():
         #Args[2] archivos a enviar
         if args[0] and eval(args[2]) != []:
             is_server = self.isObjServer(args[1])
-            # print("Sendddding: " + args[2])
-            # print("Directory: " + self.directory)
             files = directory.getFilesObjects(self.directory, files = eval(args[2]))
             names = directory.getFilesAtDirectory(self.directory, needed_files = eval(args[2]),  add_path = False, extra = False)
             try:
