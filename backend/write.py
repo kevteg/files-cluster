@@ -490,6 +490,7 @@ class server():
                         else:
                             self.sendToServer(args[1], "done" + self.separator + str(names[index]))
                             self.sendToServer(args[1], "done" + self.separator +"sending")
+                        _file.close()
                     self.is_sending = False
             except Exception as e:
                 print("Error sending file")
