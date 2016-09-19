@@ -17,7 +17,6 @@ from gi.repository import Notify, GLib
 # import ipaddress
 '''
     Author: Keeeevin
-    TODO: Write docs of each function
 '''
 class server():
     def __init__(self, group_name, username, dirc, interface = None):
@@ -63,7 +62,7 @@ class server():
                 self.askForFiles = True
                 self.count = True
                 self.self_obj = uniObj(username = username)
-                self.is_sending = False #Está mandando un archivo
+                self.is_sending = False #Para saber si Está mandando un archivo
                 self.addInformationFile(group_name, self.username, self.interface, self.directory)
             except Exception as e:
                 print("Error: ", file=sys.stderr)
@@ -72,7 +71,11 @@ class server():
         else:
             print("Error: Select a name a bit larger please!", file=sys.stderr)
             exit(-1)
-
+    '''
+    brief: Método que muestra una ventana de confirmación para borrar los archivos que otro usuario borro
+    param: message:     Mensaje a mostrar al usuario
+           files:     Archivos a borrar en caso de que el usuario acepte
+    '''
     def delete(self, message, files):
 
         file_change=Notify.Notification.new("Hello", message, "dialog-question")
@@ -87,7 +90,12 @@ class server():
             GLib.MainLoop().run()
         except:
             return True
-
+    '''
+    brief: Método que se llama si un user decide eliminar los archivos que alguien más borro
+    param: notification:     notificación que llama al método
+           action_name: nombre de la acción
+           files: archivos a borrar
+    '''
     def acceptMessage(self, notification, action_name, files):
         print("Gonna delete these files:")
         for f in files:
@@ -98,6 +106,12 @@ class server():
             except:
                 pass
 
+    '''
+    brief: Método que genera un log sobre los directorios que se han compartido
+    param: group_name:     nombre del grupo del script
+           username:     nombre de para identificar al usuario
+           interfaz:     interfaz con la que se conectó el script
+    '''
     def addInformationFile(self, group_name, username, interface, directory):
         info = directory + ',' + group_name + ',' + username + ',' + interface
         user = subprocess.Popen('echo $USER', shell=True, stdout=subprocess.PIPE)
@@ -111,7 +125,11 @@ class server():
             pass
         if add:
             subprocess.Popen('echo \'' + info + '\' >> /home/$USER/.files-cluster', shell=True, stdout=subprocess.PIPE)
-
+    '''
+    brief: Método que genera una dirección multicast y un puerto en base al nombre de grupo que escogio el user
+    param: group_name:     nombre del grupo del script
+    return: dirección y puerto multicast a conectar
+    '''
     def getConnectionInfo(self, group_name):
         ip = None
         port = None
@@ -134,7 +152,9 @@ class server():
                 ip += i if index%4 else ':' + i
 
         return ip, port
-
+    '''
+   brief: Método que corre los hilos principales de la aplicación
+   '''
     def run(self):
         try:
             print("Starting files-cluster")
@@ -152,20 +172,26 @@ class server():
             self.multicast_thread.join(1)
             self.multicast_thread_sender.start()
             self.multicast_thread_sender.join(1)
-            # while True:
-            #     pass
         except (KeyboardInterrupt, SystemExit):
             print("Turnning off files-cluster")
             self.multicast_sock.close()
             self.dowork = False
-
+    '''
+    brief: Método que retorna la dirección de enlace local de la interfaz
+    param: interface: interfaz donde se buscará la dirección de enlance local
+    return: dirección de enlace local de la interfaz recibida
+    '''
     def getOwnLinkLocal(self, interface):
         find_ip = subprocess.Popen('ip addr show ' + interface + ' | grep "\<inet6\>" | awk \'{ print $2 }\' | awk \'{ print $1 }\'', shell=True, stdout=subprocess.PIPE)
         link_local = str(find_ip.communicate()[0].decode('utf-8')).split('/')[0]
         if link_local == '':
             raise ValueError("Error: No IPv6 address for that interface ")
         return link_local
-
+    '''
+    brief: Método que compara la dirección local con otra
+    param: address: dirección a comparar
+    return: interfaz, ip y si es la misma dirección local
+    '''
     def compareIp(self, address):
         try:
             connect_info = address.split('%') #interface and address
@@ -174,7 +200,12 @@ class server():
         except:
             raise ValueError("Error: could not find link local address")
 
-    #This one connects to others socket
+    '''
+    brief: Método que conecta a otro equipo como cliente (unicast)
+    param: address_to_connect: dirección a conectar
+           name: nombre del usuario al que se va a conectar
+           interface: interfaz por donde conectarse
+    '''
     def connectToTCPServer(self, name, address_to_connect, interface):
         try:
             time.sleep(1)
@@ -192,6 +223,10 @@ class server():
             print("User " + name + " seems to not be listening :(")
 
     #Este es el método del hilo que maneja el socket de conexión cuando se es cliente
+    '''
+    brief: Método que tiene cada hilo de conexión cuando se es cliente
+    param: server: socket del otro usuario
+    '''
     def tcpConnectedTo(self, server):
         #El primer mensaje deberia ser un saludo
         send, message = self.typeOfMessage('greetings')
@@ -241,6 +276,12 @@ class server():
         # print("chau")
         server.getSocket().close()
 
+    '''
+    brief: Método que envia por unicast a un objeto servidor
+    param: server: servidor a quien se le enviara los datos
+           data: datos a enviar
+           is_byte: indica si data está en bytes o no
+    '''
     def sendToServer(self, server, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + server.getUsername() + ':', repr(data))
@@ -248,8 +289,10 @@ class server():
             data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         server.getSocket().send(data.encode() if not is_byte else data)
 
-    #This one creates own tcp socket
-    #aqui deberian ir la asignación de los hilos
+    '''
+    brief: Método que espera las conexiones de clientes y asigna un hilo para manejar dicha conexión
+    param: interface: interfaz de conexión
+    '''
     def waitTCPCLients(self, interface):
         # interface = "vmnet1"
         addr = socket.getaddrinfo(self.getOwnLinkLocal(interface) + '%' + interface, self.MYPORT - 10, socket.AF_INET6, 0, socket.SOL_TCP)[0]
@@ -271,7 +314,10 @@ class server():
             self.dowork = False
         self.tcp_socket.close()
 
-    #Este es el método del hilo que maneja el socket de conexión cuando se es servidor
+    '''
+    brief: Método que tiene cada hilo de conexión cuando se es servidor
+    param: client: socket del otro usuario
+    '''
     def tcpConnection(self, client):
         try:
             while self.dowork:
@@ -326,7 +372,12 @@ class server():
             self.dowork = False
 
         client.getSocket().close()
-
+    '''
+    brief: Método que envia por unicast a un objeto cliente
+    param: client: cliente a quien se le enviara los datos
+           data: datos a enviar
+           is_byte: indica si data está en bytes o no
+    '''
     def sendToClient(self, client, data, is_byte = False):
         if not is_byte:
             print ('Sending to ' + client.getUsername() + ':', repr(data))
@@ -334,6 +385,10 @@ class server():
             data = (struct.pack(str(_s) + 'B',*([0]*_s))).decode() + data
         client.getSocket().send(data.encode() if not is_byte else data)
 
+    '''
+    brief: Método que procesa el saludo de los hosts que se conecten al grupo multicast y crea una conexión unicast con ellos
+    param: args: argumentos del método
+    '''
     def processUnicastConnection(self, args):
         #Si la dirección es diferente a la propia
         #el primer args es si es o no unicast el segundo el que envia y el tercero la informacion
@@ -354,6 +409,11 @@ class server():
                     print("Changing client name to: " + args[2])
                     args[1].setUsername(args[2])
 
+    '''
+    brief: Método que busca el objeto unicast asociado a una dirección
+    param: address: dirección del objeto que se busca
+           interface: interfaz de la conexión
+    '''
     def findUnicastObject(self, address, interface):
         uni_object = None
         is_server = False
@@ -368,7 +428,10 @@ class server():
                     is_server = True
                     break
         return is_server, uni_object
-
+    '''
+    brief: Método que elimina las conexiones unicast
+    param: obj: objeto a eliminar
+    '''
     def deleteConnection(self, obj):
         for uni in self.unicast_connected_to.keys():
             if uni.getAddress() == obj.getAddress():
@@ -379,7 +442,10 @@ class server():
                 if uni.getAddress() == obj.getAddress():
                     self.unicast_connections.pop(obj)
                     break
-
+    '''
+    brief: Método que indica si el objeto unicast es servidor
+    param: obj: objeto a verificar
+    '''
     def isObjServer(self, obj):
         is_server = False
         for uni in self.unicast_connections.keys():
@@ -388,7 +454,10 @@ class server():
                 break
         return is_server
 
-
+    '''
+    brief: Método que envia por unicast los archivos a un user
+    param: args: argumentos del método, incluyendo la petición de archivos y el objeto unicast que lo pidio
+    '''
     def sendFiles(self, args):
         #Args[1] a quien se le van a mandar los archivos
         #Args[2] archivos a enviar
@@ -425,7 +494,10 @@ class server():
             except Exception as e:
                 print("Error sending file")
                 print(e)
-
+    '''
+    brief: Método que crea el archivo vacio y prepara al script para no pedir mas archivos a nadie
+    param: args: argumentos del método
+    '''
     def receiveFile(self, args):
         if args[0]:
             self.askForFiles = False
@@ -434,16 +506,27 @@ class server():
             # self.portion = size_of_comming_file/1024
             self.tmp = open(self.directory + "/" + str(args[2]).strip(), "wb")
             args[1].setReceiving(True)
-
+    '''
+    brief: Método que se llama al recibir un donde sending del objeto unicast
+    param: args: en este caso se usa para verificar que es unicast la conexión
+    '''
     def doneReceiving(self, args):
         if args[0]:
             print("DONE RECEIVING")
             self.askForFiles = True
             self.count = True
-
+    '''
+    brief: Método que envia el saludo inial
+    param: args: argumentos del método, en este caso no es necesario
+    return: nombre al grupo multicast
+    '''
     def sendUserName(self, args):
         return 'connection' + self.separator + self.username
-
+    '''
+    brief: Método que actua como un multiplexor de las diferentes peticiones que se reciban, envia la información al método correcto, por eso todos reciben args
+    param: type: petición que hace el otro programa
+           args: argumentos a mandar al script
+    '''
     def typeOfMessage(self, type, args = None):
         #retorna si va a responder y el mensaje que enviara si es que lo va a mandar
         methods =  {
@@ -457,6 +540,10 @@ class server():
         }.get(type, (False, (lambda args: "Error")))
         return methods[0], methods[1](args)
 
+    '''
+    brief: Método que revisa los archivos que envian los programas al grupo y decide si pedirlos o no
+    param: args: argumentos del método
+    '''
     def checkFiles(self, args):
         if args and self.askForFiles:
             address_to_connect, interface, connect = self.compareIp(str(args[1][0]))
@@ -505,10 +592,16 @@ class server():
                         else:
                             self.sendToServer(partner_connection, "need" + self.separator + str(petition))
 
+    '''
+    brief: Método que envia mensajes al grupo multicast
+    param: message: mensaje a enviar
+    '''
     def sendToGroup(self, message):
         print("Sending to group: " + message)
         self.multicast_sock.sendto(message.encode(), (self.addrinfo[4][0], self.MYPORT))
-
+    '''
+    brief: Método que se mantiene escuchando el grupo multicast, también envia el mensaje inicial
+    '''
     def multicast_check(self):
         #mensaje de saludo inicial a los que esten escuchando
         #este método se encarga de responder a lo que llegue
@@ -533,6 +626,9 @@ class server():
             self.dowork = False
         self.multicast_sock.close()
 
+    '''
+    brief: Método cuenta los segundos para enviar información de los archivos al grupo multicast
+    '''
     def time_checker(self):
         send_files_count_secs = 0
         try:
@@ -544,7 +640,9 @@ class server():
                     send_files_count_secs = 0
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
-
+    '''
+    brief: Método que envia al grupo multicast
+    '''
     def multicast_sender(self):
         #este método se encarga de enviar información sin petición
         try:
@@ -557,11 +655,17 @@ class server():
                         self.sendToGroup("files" + self.separator + str(message))
         except (KeyboardInterrupt, SystemExit):
             self.dowork = False
+    '''
+    brief: Método que cierra todas las conexiones iniciales
+    '''
     def killEverySocket(self):
         for uni in self.unicast_connected_to.keys():
             uni.getSocket().close()
         for uni in self.unicast_connections.keys():
             uni.getSocket().close()
+    '''
+    brief: Método que escucha el input del user para cerrar el programa
+    '''
     def userInput(self):
         while self.dowork:
             _in = input()
