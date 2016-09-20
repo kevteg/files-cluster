@@ -76,8 +76,8 @@ class server():
     brief: Método que muestra que el usuario se fue
     param: message:     Mensaje a mostrar al usuario
     '''
-    def userGone(self, message):
-        file_change=Notify.Notification.new("Hola", message, "dialog-question")
+    def notificationToUser(self, message):
+        file_change=Notify.Notification.new("Files cluster", message, "dialog-question")
         file_change.show()
         try:
             GLib.MainLoop().run()
@@ -90,7 +90,7 @@ class server():
     '''
     def delete(self, message, files):
 
-        file_change=Notify.Notification.new("Hello", message, "dialog-question")
+        file_change=Notify.Notification.new("Files cluster", message, "dialog-question")
         file_change.add_action(
             "action_click",
             "¡Si!",
@@ -256,7 +256,7 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(server)
-                        self.userGone("El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido")
+                        self.notificationToUser("El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido")
                         self.doneReceiving([True])
                         break
                     if send:
@@ -344,7 +344,7 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(client)
-                        self.userGone("El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido")
+                        self.notificationToUser("El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido")
                         self.doneReceiving([True])
                         break
                     if send:
@@ -398,6 +398,7 @@ class server():
                     is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
                     if unicastObject is None:
                         print("I did not send that. Will create a unicast connection with " + address_to_connect)
+                        self.notificationToUser("Nuevo usuario conectado en " + self.directory)
                         self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
                     else:
                         print("Already connected to " + args[2])
