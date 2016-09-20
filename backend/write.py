@@ -257,7 +257,7 @@ class server():
                         print("Error with received data")
                         self.deleteConnection(server)
                         message_to_user = "El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido"
-                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification = threading.Thread( name='notification', target=self.notificationToUser, args = [message_to_user])
                         notification.start()
                         notification.join(1)
                         self.doneReceiving([True])
@@ -348,7 +348,7 @@ class server():
                         print("Error with received data")
                         self.deleteConnection(client)
                         message_to_user = "El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido"
-                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification = threading.Thread( name='notification', target=self.notificationToUser, args = [message_to_user])
                         notification.start()
                         notification.join(1)
                         self.doneReceiving([True])
@@ -405,7 +405,7 @@ class server():
                     if unicastObject is None:
                         print("I did not send that. Will create a unicast connection with " + address_to_connect)
                         message_to_user = "Nuevo usuario conectado en " + self.directory
-                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification = threading.Thread( name='notification', target=self.notificationToUser, args = [message_to_user])
                         notification.start()
                         notification.join(1)
                         self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
