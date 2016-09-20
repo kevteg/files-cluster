@@ -258,6 +258,8 @@ class server():
                         self.deleteConnection(server)
                         message_to_user = "El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido"
                         notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification.start()
+                        notification.join(1)
                         self.doneReceiving([True])
                         break
                     if send:
@@ -347,6 +349,8 @@ class server():
                         self.deleteConnection(client)
                         message_to_user = "El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido"
                         notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification.start()
+                        notification.join(1)
                         self.doneReceiving([True])
                         break
                     if send:
@@ -400,7 +404,10 @@ class server():
                     is_server, unicastObject = self.findUnicastObject(address_to_connect, interface)
                     if unicastObject is None:
                         print("I did not send that. Will create a unicast connection with " + address_to_connect)
-                        self.notificationToUser("Nuevo usuario conectado en " + self.directory)
+                        message_to_user = "Nuevo usuario conectado en " + self.directory
+                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
+                        notification.start()
+                        notification.join(1)
                         self.connectToTCPServer(name = args[2], address_to_connect = address_to_connect, interface = interface)
                     else:
                         print("Already connected to " + args[2])
