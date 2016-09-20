@@ -256,7 +256,8 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(server)
-                        self.notificationToUser("El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido")
+                        message_to_user = "El usuario " + server.getUsername() + "(" + self.directory + ")" + " se ha ido"
+                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
                         self.doneReceiving([True])
                         break
                     if send:
@@ -344,7 +345,8 @@ class server():
                         send = False
                         print("Error with received data")
                         self.deleteConnection(client)
-                        self.notificationToUser("El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido")
+                        message_to_user = "El usuario " + client.getUsername() + " (" + self.directory + ")" + " se ha ido"
+                        notification = threading.Thread( name='notification', target=self.notificationToUser(), args = [message_to_user])
                         self.doneReceiving([True])
                         break
                     if send:
