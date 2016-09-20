@@ -1,0 +1,11 @@
+{
+  "name":"Files cluster",
+  "main":"index.html",
+  "window":{
+    "width":1000,
+    "height":600,
+    "frame":false,
+    "transparent": true,
+    "icon": "icon.png"
+  }
+}
