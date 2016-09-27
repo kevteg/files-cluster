@@ -3,9 +3,9 @@ var grupos = [];
 var users = [];
 var processes = [];
 var interface;
-var side_color;
-var side_action_color;
-var main_color;
+var side_color = "#556270" ;
+var side_text_color = "#dfe5eb";
+var main_color = "#FF6B6B";
 
 function add_direc()
 {
@@ -53,11 +53,31 @@ function add_direc()
 
 function change_if(){
 	interface = $('#interface').val();
-	if (typeof(interface) != 'undefined' && interface != null && interface != "")
-	{
-	  console.log(interface);
+	side_color = $('#side_color').val();
+	side_text_color = $('#side_action_color').val();
+	main_color = $('#main_color').val();
+	if (typeof(side_color) != 'undefined' && side_color != null && side_color != ""){
+		$('.menu-active').css("background",side_color)
+	}
+	if (typeof(side_text_color) != 'undefined' && side_text_color != null && side_text_color != ""){
+		$('.text').css("color",side_text_color)
+	}
+	if (typeof(main_color) != 'undefined' && main_color != null && main_color != ""){
+		$('.title').css("color",main_color)
+		$('#floating-button').css("background",main_color)
 	}
 }
+
+function delete_changes(){
+	side_color = "#556270" ;
+	side_text_color = "#dfe5eb";
+	main_color = "#FF6B6B";
+	$('.menu-active').css("background",side_color)
+	$('.text').css("color",side_text_color)
+	$('.title').css("color",main_color)
+	$('#floating-button').css("background",main_color)
+}
+
 
 function sleep (time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -142,7 +162,7 @@ $(".settings").click(function(){
 		$(".setting-panel").css("display","block")
 });
 
-$("#close-setting").click(function(){
+$("#close-set").click(function(){
 	$(".main-panel").css("display","block")
 	$(".setting-panel").css("display","none")
 });

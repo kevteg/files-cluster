@@ -12,14 +12,14 @@
           <!-- Navigation -->
         <nav id="slide-menu">
         	<ul>
-        		<li class="new"><i class="fa fa-plus"></i>Nuevo Directorio</li>
-        		<li class="delete"><button onclick="eliminar()" type="button" ><i class="fa fa-trash"></i>Eliminar Directorio</button></li>
-        		<li class="settings"><i class="fa fa-cogs"></i>Configuración</li>
-            <li class="delete"><button onclick="close_all()" type="button" ><i class="fa fa-sign-out"></i>Cerrar todo</button></li>
+        		<li class="text new "><i class="fa fa-plus"></i>Nuevo Directorio</li>
+        		<li class="text delete"><button onclick="eliminar()" type="button" ><i class="fa fa-trash"></i>Eliminar Directorio</button></li>
+        		<li class="text settings"><i class="fa fa-cogs"></i>Configuración</li>
+            <li class="text delete"><button onclick="close_all()" type="button" ><i class="fa fa-sign-out"></i>Cerrar todo</button></li>
         	</ul>
         </nav>
     </head>
-    <body>
+    <body id="body">
       <div class="mac">
         <div class="title-bar">
           <div class="close"><a href="javascript:close()">&nbsp;&nbsp;&nbsp;</a></div>
@@ -34,7 +34,7 @@
         <!-- Sections for each directory -->
         <section class="main-panel">
           <div id="directorys">
-            <h3>Administración</h3>
+            <h3 class="title">Administración</h3>
           </div>
           <div id="newModal" class="modal fade" role="dialog">
             <div class="modal-dialog">
@@ -43,7 +43,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal">&times;</button>
-                  <h3 class="modal-title">Nuevo Directorio</h3>
+                  <h3 class="modal-title title">Nuevo Directorio</h3>
                 </div>
                 <div class="modal-body">
                   <p>Nombre del directorio</p>
@@ -67,7 +67,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h3 class="modal-title">Eliminar Directorio</h3>
+                <h3 class="modal-title title">Eliminar Directorio</h3>
               </div>
               <div class="modal-body" id="eliminar">
               </div>
@@ -80,10 +80,18 @@
         </div>
         </section>
         <section class="setting-panel">
-          <h3>Configuración</h3>
+          <h3 class="title">Configuración</h3>
           <p>Interfaz por defecto</p>
           <input id="interface" type="text" placeholder="Interfaz"></input>
+          <p>Color de acción</p>
+          <input type="text" id="main_color" placeholder="#ffffff">
+          <p>Color del menú</p>
+          <input type="text" id="side_color" placeholder="#ffffff">
+          <p>Color texto del menú</p>
+          <input type="text" id="side_action_color" placeholder="#ffffff">
           <button id="close-setting" class="btn" onclick="change_if()">Guardar</button>
+          <button id="delete-setting" class="btn" onclick="delete_changes()">Reestablecer</button>
+          <button id="close-set" class="btn" onclick="close_settings()">Regresar</button>
         </section>
 
         <!-- Floating button -->
